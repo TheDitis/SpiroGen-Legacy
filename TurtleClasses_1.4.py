@@ -202,7 +202,7 @@ class Pattern:
             self._turt.heading = 90 * i
             self.rainbowcircles(repeats, radius)
 
-    def double_cardioid_thing(self, repeats, radius, position=[0, 0]):
+    def cardioid_flower(self, repeats, radius, position=[0, 0]):
         self._turt.position = position
         for i in range(4):
             self._turt.heading = 90 * i
@@ -234,21 +234,6 @@ class Pattern:
             self.rainbowcircles_centered(repeats, radius, pos=[j, yint])
             for i in range(yrange_):
                 self.rainbowcircles_centered(repeats, radius)
-        # self.rainbowcircles_centered(repeats, radius, pos=[0, yint])
-        # for i in range(range_):
-        #     self.rainbowcircles_centered(repeats, radius)
-        # self.rainbowcircles_centered(repeats, radius, pos=[xint, yint])
-        # for i in range(range_):
-        #     self.rainbowcircles_centered(repeats, radius)
-        # self.rainbowcircles_centered(repeats, radius, pos=[-xint, yint])
-        # for i in range(range_):
-        #     self.rainbowcircles_centered(repeats, radius)
-        # self.rainbowcircles_centered(repeats, radius, pos=[-(xint * 2), yint])
-        # for i in range(range_):
-        #     self.rainbowcircles_centered(repeats, radius)
-        # self.rainbowcircles_centered(repeats, radius, pos=[(xint * 2), yint])
-        # for i in range(range_):
-        #     self.rainbowcircles_centered(repeats, radius)
 
 
 speed = 1000
@@ -277,15 +262,19 @@ franklin = Turt(color_list2, 1, 10)
 # I then create a pattern instance, assigning the turtle we want to execute the patterns
 # The second argument is the number of repeats
 # The third argument is a color scheme, although this is currently overridden by the turtles scheme
-circle1 = Pattern(franklin, 20, color_list2)
+patterngen1 = Pattern(franklin, 20, color_list2)
 
 
-
-# circle1.rainbowcircles(50, 5)
-circle1.many_circles(50, 10)
-# circle1.double_cardioid_thing(50, 5)
-# circle1.hypercardioid_thing(50, 5)
-# circle1.record_thing()
+'''
+Here are some patterns to try. 
+1st argument for most patterns is number of circles per circle thing
+2nd argument for most patterns is starting radius
+'''
+# patterngen1.rainbowcircles(100, 5)
+# patterngen1.many_circles(50, 10)
+patterngen1.cardioid_flower(50, 5)
+# patterngen1.hypercardioid_thing(50, 5)
+# patterngen1.record_thing()
 
 
 turtle.exitonclick() # This makes it so that the window doesn't close itself once it's done drawing
