@@ -142,6 +142,50 @@ class Turt:
         self.turtle.seth(90)
         self.turtle.forward(dist)
 
+snake_case = 'asdf'
+myVar = 'asdf'
+class StructureMixin:
+    def __init__(self, lower_structure, parameters):
+        self.params
+
+    def draw(self):
+        pass
+
+    def oscillate(self):
+        pass
+
+
+class ParamGen:
+    def __init__(self, type_, range_):
+        if type_ == 'params':
+            self.space = self._get_colorspace(params)
+        if type_ == 'size':
+            pass
+
+    def __iter__(self):
+        'asdf'
+
+    def __next__(self):
+        pass
+
+
+class ColorGen(ParamGen):
+    def __init__(self, p1, p2, p3):
+        pass
+
+
+class ConcentricStructure(StructureMixin):
+    pass
+
+
+class SpiralStructure(StructureMixin):
+    pass
+
+
+class GridStructure(StructureMixin):
+    pass
+
+
 
 class Pattern:
 
@@ -432,7 +476,7 @@ yellowgreenblue = ColorScheme(51, [255, 0], [255, 150], [0, 255])
 # Here I create a turtle object named franklin, and give him a color scheme to follow
 # argument 2 is pensize and argument 3 is speed, although this is currently overridden above by the tracer method
 # to give him a color scheme, put the schemename.hexcolors as the first argument
-franklin = Turt(yellowgreenblue.hexcolors, 1, 10)
+franklin = Turt(color_list2, 1, 10)
 
 # I then create a pattern instance, assigning the turtle we want to execute the patterns
 # The second argument is the number of repeats
@@ -447,7 +491,7 @@ Here are some patterns to try.
 '''
 patterngen1.rainbowcircles(100, 5)
 # patterngen1.many_circles(50, 10)
-# patterngen1.cardioid_flower(50, 5)
+patterngen1.cardioid_flower(50, 5)
 # patterngen1.hypercardioid_thing(50, 5)
 # patterngen1.record_thing()
 # patterngen1.flowerp(100, 1)
