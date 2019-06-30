@@ -40,7 +40,7 @@ class Modifier:
         pass
 
     def __call__(self, vector):
-        vector.
+        vector.add
 
 
 class Grid:
@@ -49,3 +49,6 @@ class Grid:
 
     def __iter__(self, i):
         pass
+
+check = V(2, 5)
+print(check)

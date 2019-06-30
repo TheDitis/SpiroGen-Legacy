@@ -142,6 +142,52 @@ class Turt:
         self.turtle.seth(90)
         self.turtle.forward(dist)
 
+snake_case = 'asdf'
+myVar = 'asdf'
+
+
+class StructureMixin:
+    def __init__(self, lower_structure, parameters):
+        self.params = parameters
+
+    def draw(self):
+        pass
+
+    def oscillate(self):
+        pass
+
+
+class ParamGen:
+    def __init__(self, type_, range_):
+        if type_ == 'params':
+            self.space = self._get_colorspace(params)
+        if type_ == 'size':
+            pass
+
+    def __iter__(self):
+        'asdf'
+
+    def __next__(self):
+        pass
+
+
+class ColorGen(ParamGen):
+    def __init__(self, p1, p2, p3):
+        pass
+
+
+class ConcentricStructure(StructureMixin):
+    pass
+
+
+class SpiralStructure(StructureMixin):
+    pass
+
+
+class GridStructure(StructureMixin):
+    pass
+
+
 
 class Pattern:
 
