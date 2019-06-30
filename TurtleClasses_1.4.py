@@ -1,5 +1,6 @@
 import turtle
 from matplotlib.colors import rgb2hex as pltcolors
+from peepdis import peep
 
 color_list2 = [
         'red', 'crimson', 'orangered', 'darkorange', 'orange', 'gold',
@@ -49,10 +50,9 @@ class ColorScheme:
             NewR, NewG, NewB = NewR + Rintrvl, NewG + Gintrvl, NewB + Bintrvl
             self.rgbcolors.append(rgb)
             self.rgbcolorscale.append(rgbfloats)
-        self.hexconvert()
+        self._hexconvert()
 
-
-    def hexconvert(self):
+    def _hexconvert(self):
         for i in self.rgbcolorscale:
             hexcol = pltcolors(i)
             self.hexcolors.append(hexcol)
@@ -352,7 +352,7 @@ class Pattern:
 
     def flowerp(self, npetals=5, size=1, curverange=10, petalfwd=15, curveangle=9, colors=None, pos=[0, 0]):
         # radius = petalfwd / curverange
-        if colors == None:
+        if colors is None:
             colors = self._turt.color
         self.pen('up')
         self._turt.turtle.goto(pos[0], pos[1])
@@ -424,7 +424,7 @@ Create color schemes here
 It will create a list of colors of specified length (n), and each generated color value will 
 change from each color to the next by equal increments from the start value, to the end value 
 of each of the RGB ranges     
-'''                  # len      R        G         B
+'''                  # len     R        G         B
 redtoblue = ColorScheme(51, [255, 0], [0, 200], [0, 255])
 yellowgreenblue = ColorScheme(51, [255, 0], [255, 150], [0, 255])
 
@@ -445,7 +445,7 @@ Here are some patterns to try.
 1st argument for most patterns is number of circles per circle thing
 2nd argument for most patterns is starting radius
 '''
-# patterngen1.rainbowcircles(100, 5)
+patterngen1.rainbowcircles(100, 5)
 # patterngen1.many_circles(50, 10)
 # patterngen1.cardioid_flower(50, 5)
 # patterngen1.hypercardioid_thing(50, 5)
@@ -461,7 +461,7 @@ Here are some patterns to try.
 # size, curverange, petalfwd, curveangle
 # patterngen1.half_flower(26)
 # patterngen1.many_flowers(26, 5)
-patterngen1.many_flowers()
+# patterngen1.many_flowers()
 
 
 turtle.exitonclick()   # This makes it so that the window doesn't close itself once it's done drawing
