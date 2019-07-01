@@ -11,16 +11,57 @@ color_list = [
     ]
 
 
-class BaseMixin:
-    def __init__(self, turt, lower_structure, parameters):
-        self._turt = turt
+class TransformationMixin:
+    def __init__(self, lower_structure):
+        self._lower_structure = lower_structure
+        self._turt = Turt('asdf')
+        self._color_sheme = ('asdf')
 
-    def draw(self):
-        pass
+    def draw(self, thing):
+        self._turt.pendown()
+        self._turt(thing)
+        self._turt.penup()
 
     def oscillate(self):
+
+
+class ConcentricTransform(TransformationMixin):
+    def __init__(self, shape, size_gen, center_gen):
+        super().__init__(shape)
+        self._size_gen = size_gen
+        self._center_gen = center_gen
+
+class RadialTransform(TransformationMixin):
+    def __init__(self, petal, axes, angle_gen):
+        super().__init__(petal)
+
+
+class PatternMixin:
+    def __init__(self):
         pass
 
+class FlowerPattern(PatternMixin):
+    def __init__(self, petal_width, petal_angle_gen):
+        super().__init__()
+        self._shape = Circle(radius)
+        self._pattern = RadialTransform(self._shape, petal_angle)
+        self._design = GridTransform(self._pattern, dist=10, edge='center')
+
+def torus_transform(pattern, ax1_radius, ax2_radius):
+    pass
+
+class SpaceTransform(TransformationMixin, DrawMixin):
+    pass
+
+class SphericalTransform(SpaceTransform):
+    pass
+
+class TorusTransform(SpaceTransform):
+    pass
+
+def draw(pattern)
+
+class PatternMixin
 
 class Turt:
 
