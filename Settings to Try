@@ -1,0 +1,43 @@
+SETTINGS TO TRY:
+
+LVL2.sin_spiral(50, 1, rotate=2, rotaterate=20, cosine=True)
+
+LVL2.layered_flowers(layers=250, npetals=6, innerdepth=1, sizefactor=0.5, rotate=1, colors=rainbow1)
+
+LVL2.sin_avg_point_rotation(32, 5, 0, rotate=90, rotaterate=1,ampshift=5, colors=rainbow1, length=30)
+
+RadialAngularPattern(300, [[90, 2], [120, 2]], jank=0, turncycle=5, pensize=1, showcenter=False, colors=rainbow1, position=[0, 0], penup=False)
+
+
+
+
+
+
+
+
+
+
+
+COLOR SCHEMES:
+
+
+#               r          o            y          yg           g           bg          b           b           p           v          r
+rainbow = {'r': [[255, 255], [255, 255], [255, 220], [220,  75], [75,    3], [3,     3], [3,    30], [30,  125], [125, 220], [220, 255]],
+           'g': [[0,   150], [150, 255], [255, 255], [255, 255], [255, 255], [255, 145], [145,   3], [3,     3], [3,     3], [3,     0]],
+           'b': [[0,     0], [0,     0], [0,     3], [3,     3], [3,   240], [240, 255], [255, 255], [255, 255], [255, 255], [255,   0]]}
+
+bluepinkpurp = {'r': [[0, 255], [255, 150], [150, 200]],
+                'g': [[145, 0]],
+                'b': [[255, 150], [150, 255]]}
+
+peacock = {'r': [[0, 255], [255, 150], [150, 200]],
+           'g': [[0, 145], [145, 150], [150, 0]],
+           'b': [[255, 150], [150, 255]]}
+
+
+
+these color scheme dictionaries must be put into a ColorScheme object, like this:
+
+rainbow1 = ColorSchemeDict(rainbow, 260)
+                            ^        ^
+                color dictionary    number of colors to generate

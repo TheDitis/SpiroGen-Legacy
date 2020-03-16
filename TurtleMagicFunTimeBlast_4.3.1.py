@@ -233,15 +233,13 @@ class Transform:
 
 class Analyze:
     def __init__(self, funclist=[[]], ldepth=1):
-
         self.funclist = funclist
         if isinstance(self.funclist, Pattern):
             self.funclist = self.funclist.list
-            print('Analyze funclist: ', self.funclist)
+            ldepth = get_depth(self.funclist)
         elif isinstance(self.funclist[0], Pattern):
             self.funclist = [i.list for i in self.funclist]
-            print('Analyze funclist: ', self.funclist)
-            self.ldepth = get_depth(self.funclist)
+            ldepth = get_depth(self.funclist)
         self.coordlist = []
         self.ldepth = ldepth
 
@@ -1356,6 +1354,9 @@ class LVL2:
         wavelength2 = wavelength
         amplitude2 = amplitude
         length2 = length
+        wavelength3 = wavelength
+        amplitude3 = amplitude
+        length3 = length
         lenshift = lenshift / 100
         for i in range(strands):
             colind = i % len(colors)
@@ -1407,50 +1408,54 @@ class LVL2:
             if individualrotation != 0:
                 indcenter = Analyze(sin1).center()
                 Transform(sin1).rotate(individualrotation * (i / 10), indcenter)
-        # center2 = Analyze(funclist2, ldepth=get_depth(funclist2)).center(show=True)
+        center2 = Analyze(funclist2, ldepth=get_depth(funclist2)).center(show=False)
 
         """Part 3"""
-        # if center2 != position:
-        #     shift = True
-        #     xpos, ypos = position[0] - center[0], position[1] - center[1]
-        # else:
-        #     xpos, ypos = position[0], position[1]
-        # rotationfactor = 1
-        # funclist3 = []
-        # endlists = []
-        # endliste = []
-        # if totalrotation is None:
-        #     totalrotation = -(rotate * (strands / 2))
-        # for i in range(strands):
-        #     colind = i % len(colors)
-        #     col = colors[colind]
-        #     sin1 = Wave(stretch=wavelength, height=amplitude, color=col,
-        #                 position=[xpos, ypos], length=length, cosin=cosine, pensize=pensize)
-        #     xpos += xshift
-        #     ypos += yshift
-        #     wavelength += wlshift
-        #     amplitude += ampshift
-        #     length += lenshift
-        #     if rotate != 0 and rotation_point is not None:
-        #         Transform(sin1).rotate(rotate * rotationfactor, rotation_point)
-        #         rotationfactor += rotaterate
-        #     else:
-        #         rotation_point = (0, 0)
-        #     if totalrotation > 0:
-        #         Transform(sin1).rotate(totalrotation, center)
-        #     funclist3.append(sin1)
-        #     if individualrotation != 0:
-        #         indcenter = Analyze(sin1).center()
-        #         Transform(sin1).rotate(individualrotation * (i / 10), indcenter)
-        #
-        #     if i > 0:
-        #         if connectends or webends:
-        #             endlists.append(sin1[0])
-        #             endliste.append(sin1[-1])
+        xpos, ypos = position[0], position[1]
+        rotationfactor = 1
+        funclist3 = []
+        endlists = []
+        endliste = []
+        if totalrotation is None:
+            totalrotation = -(rotate * (strands / 2))
+        for i in range(strands):
+            colind = i % len(colors)
+            col = colors[colind]
+            sin1 = Wave(stretch=wavelength3, height=amplitude3, color=col,
+                        position=[xpos, ypos], length=length3, cosin=cosine, pensize=pensize)
+            xpos += xshift
+            ypos += yshift
+            wavelength3 += wlshift
+            amplitude3 += ampshift
+            length3 += lenshift
+            if rotate != 0 and rotation_point is not None:
+                Transform(sin1).rotate(rotate * rotationfactor, rotation_point)
+                rotationfactor += rotaterate
+            else:
+                rotation_point = (0, 0)
+            if totalrotation > 0:
+                Transform(sin1).rotate(totalrotation, center)
+            funclist3.append(sin1)
+            if individualrotation != 0:
+                indcenter = Analyze(sin1).center()
+                Transform(sin1).rotate(individualrotation * (i / 10), indcenter)
+
+            if i > 0:
+                if connectends or webends:
+                    endlists.append(sin1[0])
+                    endliste.append(sin1[-1])
+            if center2 != position:
+                # shift = True
+                xdiff = position[0] - center2[0]
+                ydiff = position[1] - center2[1]
+                Transform(sin1).xshift(xdiff)
+                Transform(sin1).yshift(ydiff)
+
+
 
 
         if not draworig:
-            curfunc = funclist2
+            curfunc = funclist3
             for i in range(len(curfunc)):
                 colind = i % len(colors)
                 col = colors[colind]
@@ -1657,9 +1662,9 @@ setup(drawspeed, 'black', hide=True)
 
 
 # LVL2.layered_flowers(60, 8, innerdepth=1, rotate=1, colors=rainbow1)
-wvs = LVL2.sin_avg_point_rotation(600, 1, 1, 30, rotaterate=2, individualrotation=10, length=3, amplitude=100, ampshift=-0.15, wlshift=0, lenshift=1,
-                                  cosine=False, colors=rainbow1[::-1], pensize=1, connectends=0, idkyet=True, draworig=False)
-dot(size=6)
+wvs = LVL2.sin_avg_point_rotation(600, 1, 1, 20, rotaterate=3, individualrotation=10, length=3, amplitude=100, ampshift=-0.15, wlshift=0, lenshift=1,
+                                  cosine=False, colors=rainbow1[::1], pensize=1, connectends=0, idkyet=True, draworig=False)
+# dot(size=6)
 # DrawPath(wvs, colors=rainbow1)
 
 

@@ -233,15 +233,13 @@ class Transform:
 
 class Analyze:
     def __init__(self, funclist=[[]], ldepth=1):
-
         self.funclist = funclist
         if isinstance(self.funclist, Pattern):
             self.funclist = self.funclist.list
-            print('Analyze funclist: ', self.funclist)
+            ldepth = get_depth(self.funclist)
         elif isinstance(self.funclist[0], Pattern):
             self.funclist = [i.list for i in self.funclist]
-            print('Analyze funclist: ', self.funclist)
-            self.ldepth = get_depth(self.funclist)
+            ldepth = get_depth(self.funclist)
         self.coordlist = []
         self.ldepth = ldepth
 
@@ -289,14 +287,6 @@ class Analyze:
             yavg = sum(ys) / len(xs)
             avg = (xavg, yavg)
             center = avg
-        # elif self.ldepth >= 2:
-        #     avglst = []
-        #     for lst in self.funclist:
-        #         for i in lst:
-        #             print(i)
-        #             avgs.append(self.avgcoord(i))
-        #             print('avg: ', self.avgcoord([i]))
-        #     print('ldepth greater than 1 not set in centering method within analyze class')
         if show is True:
             self.drawdots(center)
         return center
@@ -308,9 +298,6 @@ class Analyze:
         for i in range(len(coords)):
             i2 = ((i + 1) % len(coords))
             dist, xdist, ydist = self.distance(coords[i], coords[i2], seperate=True)
-            # xdist = round(coords[i][0] - coords[i2][0], 6)
-            # ydist = round(coords[i][1] - coords[i2][1], 6)
-            # dist = round(sqrt((xdist ** 2) + (ydist ** 2)), 2)
             distlist.append(dist)
             xydistlist.append((xdist, ydist))
         return distlist, xydistlist
@@ -751,13 +738,16 @@ class PolarPattern:
 
 
 class Wave(Pattern):
-    def __init__(self, stretch=50, height=100, pensize=1, position=[0, 0], length=25,
+    def __init__(self, stretch=50, height=100, pensize=1, position=(0, 0), length=25,
                  color='yellow', cosin=False):
         if isinstance(color, list):
             color = color[0]
             print('Only 1 color can be used. Using first in list')
         turtle.color(color)
-        self.xlist = np.linspace(-length, length + (1 / (length * 25)), length * 25)
+        if length < 0:
+            self.xlist = np.linspace(length, abs(length) + (1 / (abs(length) * 25)), abs(length) * 25)
+        else:
+            self.xlist = np.linspace(-length, length + (1 / (length * 25)), length * 25)
         if cosin is False:
             self.ylist = [sin(x) for x in self.xlist]
         else:
@@ -766,7 +756,7 @@ class Wave(Pattern):
         super().__init__(self._Olist, color, pensize, position)
         self._talllist = Transform(self._Olist).yscale(height)
         self.list = Transform(self._talllist).xscale(stretch)
-        if position != [0, 0]:
+        if position != (0, 0):
             self.list = Transform(self.list).xshift(position[0])
             self.list = Transform(self.list).yshift(position[1])
 
@@ -789,6 +779,90 @@ class Wave(Pattern):
             turtle.goto(xy)
         turtle.end_poly()
         return turtle.get_poly()
+
+
+class Rectangle(Pattern):
+    def __init__(self, width=50, height=50, pensize=1, position=(0, 0), length=25,
+                 color='yellow', cosin=False):
+        if isinstance(color, list):
+            color = color[0]
+            print('Only 1 color can be used. Using first in list')
+        turtle.color(color)
+        xpos, ypos = position[0], position[1]
+        topl = (xpos - (width / 2), ypos + (height / 2))
+        topr = (xpos + (width / 2), ypos + (height / 2))
+        botl = (xpos - (width / 2), ypos - (height / 2))
+        botr = (xpos + (width / 2), ypos - (height / 2))
+        self.plist = [topl, topr, botr, botl, topl]
+        super().__init__(self.plist, color, pensize, position)
+        # self._talllist = Transform(self.plist).yscale(height)
+        self.list = Transform(self.plist).xscale(width / 2)
+        self.list = Transform(self.list).yscale(height / 2)
+        # if position != (0, 0):
+        #     self.list = Transform(self.list).xshift(position[0])
+        #     self.list = Transform(self.list).yshift(position[1])
+
+    def draw(self):
+        lst = self.list
+        turtle.penup()
+        turtle.goto(lst[0])
+        turtle.pendown()
+        for xy in lst:
+            turtle.goto(xy)
+
+    def capturepath(self, penup=True):
+        lst = self.list
+        turtle.penup()
+        turtle.goto(lst[0])
+        if penup is False:
+            turtle.pendown()
+        turtle.begin_poly()
+        for xy in lst:
+            turtle.goto(xy)
+        turtle.end_poly()
+        return turtle.get_poly()
+
+
+class Circle(Pattern):
+    def __init__(self, width=50, height=50, pensize=1, position=(0, 0), length=25,
+                 color='yellow', cosin=False):
+        if isinstance(color, list):
+            color = color[0]
+            print('Only 1 color can be used. Using first in list')
+        turtle.color(color)
+        radius = (height / 2)
+        xpos, ypos = position[0], position[1]
+        self.plist = self.create_circle(radius, xpos, ypos)
+        super().__init__(self.plist, color, pensize, position)
+        self.list = Transform(self.plist).xscale(width / 2)
+        self.list = Transform(self.list).yscale(height / 2)
+        # self.draw()
+        # center = Analyze(self.list).center(show=True)
+        # if position != (0, 0):
+        #     self.list = Transform(self.list).xshift(position[0])
+        #     self.list = Transform(self.list).yshift(position[1])
+
+    def draw(self):
+        lst = self.list
+        turtle.penup()
+        turtle.goto(lst[0])
+        turtle.pendown()
+        for xy in lst:
+            turtle.goto(xy)
+
+    def create_circle(self, radius, xpos, ypos, penup=True):
+        if penup:
+            turtle.penup()
+        else:
+            turtle.pendown()
+        turtle.goto((xpos - radius, ypos))
+        turtle.begin_poly()
+        turtle.circle(radius)
+        turtle.end_poly()
+        circle = [tuple(i) for i in turtle.get_poly()]
+        return circle
+
+
 
 
 class RadialAngularPattern(Pattern):
@@ -1055,7 +1129,6 @@ class DrawPath:
             self.colorsync = colorsync
             self.colordistthresh = colordistthresh
             self.ldepth = self.set_depth()
-            print('ldepth: ', self.ldepth, self)
             self.goto()
             self.colorcycle = self.colorset()
             self._colordist = colordist
@@ -1073,6 +1146,8 @@ class DrawPath:
                 start = self.coordlist[0][0]
             elif self.ldepth == 3:
                 start = self.coordlist[0][0][0]
+            else:
+                print('In DrawPath.goto(), ldepth error. ldepth: ', self.ldepth)
         if coords is None:
             turtle.penup()
             turtle.goto(start)
@@ -1212,6 +1287,10 @@ class TimesTable:
     def draw(self, drawcircle=True, penup=False):
         biglist = []
         turtle.pensize(self._pensize)
+        if penup:
+            turtle.penup()
+        else:
+            turtle.pendown()
         if drawcircle:
             self.draw_circle()
         self.goto(self.ring[0], True)
@@ -1356,6 +1435,9 @@ class LVL2:
         wavelength2 = wavelength
         amplitude2 = amplitude
         length2 = length
+        wavelength3 = wavelength
+        amplitude3 = amplitude
+        length3 = length
         lenshift = lenshift / 100
         for i in range(strands):
             colind = i % len(colors)
@@ -1374,14 +1456,12 @@ class LVL2:
             if draworig is True:
                 sin1.draw()
         _, rotation_point = Analyze(funclist).crosspoint()
-        center = Analyze(funclist, ldepth=get_depth(funclist)).center(show=showpoint)
+        center = Analyze(funclist, ldepth=get_depth(funclist)).center(show=False)
         # dot(center, 10)
         print('center: ', center)
 
         """Part 2"""
-
         # else:
-        xpos, ypos = position[0], position[1]
         rotationfactor = 1
         funclist2 = []
         if totalrotation is None:
@@ -1407,57 +1487,60 @@ class LVL2:
             if individualrotation != 0:
                 indcenter = Analyze(sin1).center()
                 Transform(sin1).rotate(individualrotation * (i / 10), indcenter)
-        # center2 = Analyze(funclist2, ldepth=get_depth(funclist2)).center(show=True)
+        center2 = Analyze(funclist2, ldepth=get_depth(funclist2)).center(show=False)
 
         """Part 3"""
-        # if center2 != position:
-        #     shift = True
-        #     xpos, ypos = position[0] - center[0], position[1] - center[1]
-        # else:
-        #     xpos, ypos = position[0], position[1]
-        # rotationfactor = 1
-        # funclist3 = []
-        # endlists = []
-        # endliste = []
-        # if totalrotation is None:
-        #     totalrotation = -(rotate * (strands / 2))
-        # for i in range(strands):
-        #     colind = i % len(colors)
-        #     col = colors[colind]
-        #     sin1 = Wave(stretch=wavelength, height=amplitude, color=col,
-        #                 position=[xpos, ypos], length=length, cosin=cosine, pensize=pensize)
-        #     xpos += xshift
-        #     ypos += yshift
-        #     wavelength += wlshift
-        #     amplitude += ampshift
-        #     length += lenshift
-        #     if rotate != 0 and rotation_point is not None:
-        #         Transform(sin1).rotate(rotate * rotationfactor, rotation_point)
-        #         rotationfactor += rotaterate
-        #     else:
-        #         rotation_point = (0, 0)
-        #     if totalrotation > 0:
-        #         Transform(sin1).rotate(totalrotation, center)
-        #     funclist3.append(sin1)
-        #     if individualrotation != 0:
-        #         indcenter = Analyze(sin1).center()
-        #         Transform(sin1).rotate(individualrotation * (i / 10), indcenter)
-        #
-        #     if i > 0:
-        #         if connectends or webends:
-        #             endlists.append(sin1[0])
-        #             endliste.append(sin1[-1])
+        if center2 != position:
+            xdiff = position[0] - center2[0]
+            ydiff = position[1] - center2[1]
+            Transform(sin1).xshift(xdiff)
+            Transform(sin1).yshift(ydiff)
+        xpos, ypos = position[0] - xdiff, position[1] - ydiff
+        rotationfactor = 1
+        funclist3 = []
+        endlists = []
+        endliste = []
+        if totalrotation is None:
+            totalrotation = -(rotate * (strands / 2))
+        for i in range(strands):
+            colind = i % len(colors)
+            col = colors[colind]
+            sin1 = Wave(stretch=wavelength3, height=amplitude3, color=col,
+                        position=[xpos, ypos], length=length3, cosin=cosine, pensize=pensize)
+            xpos += xshift
+            ypos += yshift
+            wavelength3 += wlshift
+            amplitude3 += ampshift
+            length3 += lenshift
+            if rotate != 0 and rotation_point is not None:
+                Transform(sin1).rotate(rotate * rotationfactor, rotation_point)
+                rotationfactor += rotaterate
+            else:
+                rotation_point = (0, 0)
+            if totalrotation > 0:
+                Transform(sin1).rotate(totalrotation, center)
+            funclist3.append(sin1)
+            if individualrotation != 0:
+                indcenter = Analyze(sin1).center()
+                Transform(sin1).rotate(individualrotation * (i / 10), indcenter)
 
+            if i > 0:
+                if connectends or webends:
+                    endlists.append(sin1[0])
+                    endliste.append(sin1[-1])
+            if center2 != position:
+                xdiff = position[0] - center2[0]
+                ydiff = position[1] - center2[1]
+                Transform(sin1).xshift(xdiff)
+                Transform(sin1).yshift(ydiff)
 
         if not draworig:
-            curfunc = funclist2
+            curfunc = funclist3
             for i in range(len(curfunc)):
                 colind = i % len(colors)
                 col = colors[colind]
                 turtle.color(col)
                 curfunc[i].draw()
-            # DrawPath(funclist2, pensize=pensize, colors=colors)
-
 
         if webends:
             turtle.penup()
@@ -1515,14 +1598,6 @@ class LVL2:
                 ele_copy.pop(ind)
                 ind = closest_point(point, ele_copy)
                 print(ind)
-            # for i in range(len(endlists)):
-            #     if len(els_copy) >= 1:
-            #         if endlists[i] in els_copy:
-            #             els_copy.remove(endlists[i])
-            #         index = closest_point(endlists[i], els_copy)
-            #         print(index)
-            #         sorted_endlists.append(els_copy[index])
-            #         els_copy.pop(index)
 
             thresh = 20
             turtle.penup()
@@ -1541,40 +1616,10 @@ class LVL2:
                     turtle.pendown()
                 turtle.goto(sorted_endliste[i])
                 turtle.color('white')
-                # turtle.dot()
-
-            # sorteds = [endlists[0]]
-            # for j in range(len(endlists)):
-            #     alternating_list = []
-            #     for i in range(len(endlists)):
-            #         alternating_list.append(endlists[j])
-            #         alternating_list.append(endlists[i])
-            #     distlist = Analyze(alternating_list).distancelist()
-            #     print(distlist)
-            # second_elem = lambda x: x[1]
-            # sdists = Analyze(endlists).distancelist()
-            # sdists = sdists[0]
-            # # s_join = []
-            # print('endlists len: ', len(endlists))
-            # print('sdists len: ', len(sdists), sdists)
-            # s_join = [i for i in zip(endlists, sdists)]
-            # print('pre-sort: ', s_join)
-            # s_join.sort(key=second_elem)
-            # print('sorted: ', s_join)
-            # sorted_endlists = [i[0] for i in s_join]
-            # print('list s: ', sorted_endlists)
-            # turtle.penup()
-            # turtle.goto(sorted_endlists[0])
-            # turtle.pendown()
-            # for i in range(len(sorted_endlists)):
-            #     colind = i % len(colors)
-            #     col = colors[colind]
-            #     turtle.color(col)
-            #     turtle.goto(sorted_endlists[i])
 
         if showpoint is True and rotation_point is not None:
-            DrawPath(rotation_point, lines=False, dots=True, colors='white')
-            DrawPath(center, lines=False, dots=True, colors='white')
+            # dot(rotation_point, 6, 'white')
+            dot(center, 6, 'yellow')
         if getpoint is True:
             return funclist2, rotation_point
         else:
@@ -1604,6 +1649,277 @@ class LVL2:
             sp1.draw()
             xloc += xshift
             yloc += yshift
+
+    @staticmethod
+    def iterative_rotation(function=Wave, reps=30, xshift=0, yshift=0, stretch=20, length=30, depth=30,
+                           stretchshift=0, lenshift=0, depthshift=0, shift=False, colors='white', pensize=1,
+                           individualrotation=2, rotationcenter=(0, 0), position=(0, 0), draworig=False, branches=10):
+        funclist = []
+        xpos, ypos = position[0], position[1]
+        lenshift = lenshift
+        length2 = length
+        depth2 = depth
+        stretch2 = stretch
+        indrotate2 = individualrotation
+        if isinstance(colors, str):
+            colors = [colors]
+        for i in range(reps):
+            colind = i % len(colors)
+            col = colors[colind]
+            func1 = function(stretch2, depth2, pensize, (xpos, ypos), length2, col, shift)
+            xpos += xshift
+            ypos += yshift
+            length2 += lenshift
+            depth2 += depthshift
+            stretch2 += stretchshift
+            func1 = func1.list
+            if indrotate2 != 0:
+                func1 = Transform(func1).rotate(indrotate2, rotationcenter)
+                indrotate2 += individualrotation
+            funclist.append(func1)
+            if draworig is True:
+                func1.draw()
+
+        if branches != 0 or branches != 1:
+
+            orig = funclist.copy()
+
+            angle = 360 / branches
+
+            for i in range(branches - 1):
+                for b in orig:
+                    new = Transform(b).rotate((angle * (i + 1)), position)
+                    funclist.append(new)
+
+        # center = Analyze(funclist, ldepth=get_depth(funclist)).center(show=True)
+
+        # """Part 2"""
+        # # else:
+        # rotationfactor = 1
+        # funclist2 = []
+        # if totalrotation is None:
+        #     totalrotation = -(rotate * (reps / 2))
+        # for i in range(reps):
+        #     colind = i % len(colors)
+        #     col = colors[colind]
+        #     func1 = Wave(stretch=wavelength, height=amplitude, color=col,
+        #                 position=[xpos, ypos], length=length, cosin=cosine, pensize=pensize)
+        #     xpos += xshift
+        #     ypos += yshift
+        #     wavelength += wlshift
+        #     amplitude += ampshift
+        #     length += lenshift
+        #     if rotate != 0 and rotation_point is not None:
+        #         Transform(func1).rotate(rotate * rotationfactor, rotation_point)
+        #         rotationfactor += rotaterate
+        #     else:
+        #         rotation_point = (0, 0)
+        #     if totalrotation > 0:
+        #         Transform(func1).rotate(totalrotation, center)
+        #     funclist2.append(func1)
+        #     if individualrotation != 0:
+        #         indcenter = Analyze(func1).center()
+        #         Transform(func1).rotate(individualrotation * (i / 10), indcenter)
+        # center2 = Analyze(funclist2, ldepth=get_depth(funclist2)).center(show=showpoint)
+        #
+        # """Part 3"""
+        # if center2 != position:
+        #     xdiff = position[0] - center2[0]
+        #     ydiff = position[1] - center2[1]
+        #     Transform(func1).xshift(xdiff)
+        #     Transform(func1).yshift(ydiff)
+        # xpos, ypos = position[0] - xdiff, position[1] - ydiff
+        # rotationfactor = 1
+        # funclist3 = []
+        # endlists = []
+        # endliste = []
+        # if totalrotation is None:
+        #     totalrotation = -(rotate * (reps / 2))
+        # for i in range(reps):
+        #     colind = i % len(colors)
+        #     col = colors[colind]
+        #     func1 = Wave(stretch=wavelength3, height=amplitude3, color=col,
+        #                 position=[xpos, ypos], length=length3, cosin=cosine, pensize=pensize)
+        #     xpos += xshift
+        #     ypos += yshift
+        #     wavelength3 += wlshift
+        #     amplitude3 += ampshift
+        #     length3 += lenshift
+        #     if rotate != 0 and rotation_point is not None:
+        #         Transform(func1).rotate(rotate * rotationfactor, rotation_point)
+        #         rotationfactor += rotaterate
+        #     else:
+        #         rotation_point = (0, 0)
+        #     if totalrotation > 0:
+        #         Transform(func1).rotate(totalrotation, center)
+        #     funclist3.append(func1)
+        #     if individualrotation != 0:
+        #         indcenter = Analyze(func1).center()
+        #         Transform(func1).rotate(individualrotation * (i / 10), indcenter)
+        #
+        #     if i > 0:
+        #         if connectends or webends:
+        #             endlists.append(func1[0])
+        #             endliste.append(func1[-1])
+        #     if center2 != position:
+        #         xdiff = position[0] - center2[0]
+        #         ydiff = position[1] - center2[1]
+        #         Transform(func1).xshift(xdiff)
+        #         Transform(func1).yshift(ydiff)
+        #
+        if not draworig:
+            curfunc = funclist
+            for i in range(len(curfunc)):
+                colind = i % len(colors)
+                col = colors[colind]
+                turtle.color(col)
+                DrawPath(curfunc[i], colors=col, pensize=pensize)
+                # curfunc[i].draw()
+        #
+        # if webends:
+        #     turtle.penup()
+        #     turtle.goto(endlists[0])
+        #     turtle.pendown()
+        #     for i in range(len(endlists)):
+        #         colind = i % len(colors)
+        #         col = colors[colind]
+        #         turtle.color(col)
+        #         turtle.goto(endlists[i])
+        #
+        # if connectends == 1 or connectends == 3:
+        #
+        #     # Sorting endlist starts
+        #     sorted_endlists = []
+        #     els_copy = endlists.copy()
+        #     sorted_endlists.append(endlists[0])
+        #     ind = 0
+        #     while len(els_copy) > 1:
+        #         sorted_endlists.append(els_copy[ind])
+        #         point = els_copy[ind]
+        #         els_copy.pop(ind)
+        #         ind = closest_point(point, els_copy)
+        #         print(ind)
+        #
+        #     thresh = 20
+        #     turtle.penup()
+        #     turtle.goto(sorted_endlists[0])
+        #     turtle.tracer(10, 0)
+        #     turtle.pendown()
+        #     for i in range(len(sorted_endlists)):
+        #         colors = ['white']
+        #         colind = i % len(colors)
+        #         col = colors[colind]
+        #         turtle.color(col)
+        #         dist = Analyze().distance(sorted_endlists[i], sorted_endlists[i - 1])
+        #         if abs(dist) > thresh:
+        #             turtle.penup()
+        #         else:
+        #             turtle.pendown()
+        #         turtle.goto(sorted_endlists[i])
+        #         turtle.color('white')
+        #         # turtle.dot()
+        #
+        # if connectends == 2 or connectends == 3:
+        #
+        #     # Sorting endlist ends
+        #     sorted_endliste = []
+        #     ele_copy = endliste.copy()
+        #     sorted_endliste.append(endliste[0])
+        #     ind = 0
+        #     while len(ele_copy) > 1:
+        #         sorted_endliste.append(ele_copy[ind])
+        #         point = ele_copy[ind]
+        #         ele_copy.pop(ind)
+        #         ind = closest_point(point, ele_copy)
+        #         print(ind)
+        #
+        #     thresh = 20
+        #     turtle.penup()
+        #     turtle.goto(sorted_endliste[0])
+        #     turtle.tracer(10, 0)
+        #     turtle.pendown()
+        #     for i in range(len(sorted_endliste)):
+        #         colors = ['white']
+        #         colind = i % len(colors)
+        #         col = colors[colind]
+        #         turtle.color(col)
+        #         dist = Analyze().distance(sorted_endliste[i], sorted_endliste[i - 1])
+        #         if abs(dist) > thresh:
+        #             turtle.penup()
+        #         else:
+        #             turtle.pendown()
+        #         turtle.goto(sorted_endliste[i])
+        #         turtle.color('white')
+        #
+        # if showpoint is True and rotation_point is not None:
+        #     dot(rotation_point, 6, 'white')
+        #     dot(center, 6, 'white')
+        # if getpoint is True:
+        #     return funclist2, rotation_point
+        # else:
+        #     return funclist2
+
+    @staticmethod
+    def random_iterative_rotation(function=None, reps=None, xshift=None, yshift=None, stretch=None, length=None, depth=None,
+                           stretchshift=None, lenshift=None, depthshift=None, shift=False, colors='white', pensize=1,
+                           individualrotation=None, rotationcenter=(None, None), position=(0, 0), draworig=False, branches=None):
+
+        report = ""
+        if function is None:
+            flist = [Wave, Rectangle, Circle]
+            funcindex = int(np.random.randint(0, len(flist) - 1, 1))
+            print(funcindex)
+            function = flist[funcindex]
+            report += " fucntion={}".format(str(function))
+        if reps is None:
+            reps = int(np.random.randint(1, 100, 1))
+            report += ", reps={}".format(reps)
+        if xshift is None:
+            xshift = round(abs(float(np.random.randn())) * 2, 2)
+            report += ", xshift={}".format(xshift)
+        if yshift is None:
+            yshift = round(abs(float(np.random.randn())) * 2, 2)
+            report += ", yshift={}".format(yshift)
+        if stretch is None:
+            stretch = round(abs(float(np.random.randn())) * 20, 2)
+            report += ", stretch={}".format(stretch)
+        if length is None:
+            length = round(abs(float(np.random.randn())) * 20, 2)
+            report += ", length={}".format(length)
+        if depth is None:
+            depth = round(abs(float(np.random.randn())) * 20, 2)
+            report += ", depth={}".format(depth)
+        if stretchshift is None:
+            stretchshift = round(float(np.random.randn()) * 2, 2)
+            report += ", stretchshift={}".format(stretchshift)
+        if lenshift is None:
+            lenshift = round(float(np.random.randn()) * 2, 2)
+            report += ", lenshift={}".format(lenshift)
+        if depthshift is None:
+            depthshift = round(abs(float(np.random.randn())) * 5, 2)
+            report += ", depthshift={}".format(depthshift)
+        if individualrotation is None:
+            individualrotation = round(abs(float(np.random.randn(1))) * 10, 2)
+            report += ", individualrotation={}".format(individualrotation)
+        if rotationcenter[0] is None:
+            rotationcenter = (int(np.random.randint(-300, 300)), rotationcenter[1])
+            reportrotcenter = True
+        if rotationcenter[1] is None:
+            rotationcenter = (rotationcenter[0], int(np.random.randint(-300, 300)))
+            reportrotcenter = True
+        if reportrotcenter:
+            report += ", rotationcenter={}".format(rotationcenter)
+        if branches is None:
+            branches = int(np.random.randint(1, 31, 1))
+            report += ", branches={}".format(branches)
+        print(report)
+
+        colors2 = ColorScheme(colors, reps)
+
+        LVL2.iterative_rotation(function, reps, xshift, yshift, stretch, length, depth,
+                                stretchshift, lenshift, depthshift, shift, colors2, pensize,
+                                individualrotation, rotationcenter, position, draworig, branches)
+
 
 
 def closest_point(node, nodes):
@@ -1642,32 +1958,50 @@ try1 = {'r': [0, 255], 'g': [0, 255], 'b': [0, 255]}
 hot1 = {'r': [0, 255, 255, 255], 'g': [0, 0, 255], 'b': [0, 0]}
 hot1 = {'r': [0, 255, 255], 'g': [0, 0, 255], 'b': [0, 0, 0, 60]}
 
-rainbow1 = ColorScheme(rainbow, 600)
+rainbow1 = ColorScheme(rainbow, 50)
+rainbow2 = ColorScheme(rainbow, 30)
 hot1 = ColorScheme(hot1, 20)
 
 try1 = ColorScheme(try1, 1000)
 
 darkgrays = ColorScheme({'r': [0, 60], 'g': [0, 60], 'b': [0, 60]}, 20)
-whiteish = ColorScheme({'r': [50, 220], 'g': [50, 220], 'b': [50, 220]}, 10)
+whiteish = ColorScheme({'r': [50, 220], 'g': [50, 220], 'b': [50, 220]}, 30)
 # darkgrays.shiftlightness(0)
 
 speed = 10
-drawspeed = 10000
+drawspeed = 1000
 setup(drawspeed, 'black', hide=True)
 
-
 # LVL2.layered_flowers(60, 8, innerdepth=1, rotate=1, colors=rainbow1)
-wvs = LVL2.sin_avg_point_rotation(600, 1, 1, 30, rotaterate=2, individualrotation=10, length=3, amplitude=100, ampshift=-0.15, wlshift=0, lenshift=1,
-                                  cosine=False, colors=rainbow1[::-1], pensize=1, connectends=0, idkyet=True, draworig=False)
-dot(size=6)
+
+
+rain3 = ColorScheme(rainbow, 94)
+
+
+# THIS ONE!
+# wvs = LVL2.sin_avg_point_rotation(600, 1, 0, -130, rotaterate=1, individualrotation=2, length=2, amplitude=100, ampshift=0, wlshift=0, lenshift=0,
+#                                   cosine=False, colors=whiteish, pensize=1, connectends=0, draworig=False, position=(0, 0), showpoint=True)
+# LVL2.layered_flowers(colors=whiteish, rotate=2)
+# LVL2.spiral_spiral(30, colors=whiteish, diameter=20)
+# it1 = LVL2.iterative_rotation(Square, colors=rainbow1)
+
+
+#LVL2.random_iterative_rotation(colors=rainbow)
+
+# LVL2.iterative_rotation(Rectangle, reps=94, xshift=0.5, yshift=1.2, stretch=20.33, length=10, depth=6, stretchshift=-1, lenshift=1, depthshift=1, individualrotation=0.72, rotationcenter=(-212, -29), branches=5, colors=rain3)
+
+
+
+# dot(loc=(0, 0), size=3, color='red')
 # DrawPath(wvs, colors=rainbow1)
 
 
-# tt1 = TimesTable(300, 200, 2, 200, color=hot1[-5: -1], rotation=0)
+# tt1 = TimesTable(300, 200, 20, 200, color=rainbow1, rotation=0)
+# tt1.draw()
 # ttcld = Transform(tt1).generatepointcloud(5, 5)
 # DrawPath(ttcld, dots=True, lines=False, colors=hot1[-1])
 # wvs = LVL2.sin_spiral(30, 5, 0, 1, cosine=False, length=25)
-# DrawPath(wvs, colors=rainbow1, colordist=20, colorsync=True, pensize=(1, 20))
+# DrawPath(wvs, colors=rainbow1[20:], colordist=20, colorsync=True, pensize=(1, 20))
 # wvcld = Transform(wvs).generatepointcloud(5, 5)
 # DrawPath(wvcld, dots=True, lines=False, colors=hot1, colordistthresh=200)
 
@@ -1703,9 +2037,9 @@ dot(size=6)
 
 # tt1.draw(drawcircle=True)
 
-# CL1 = CascadeLines(nlines=160, lengthrange=(5, 500), distrange=(10, 600), pensizerange=(1, 10), rotation=10, color='white', position=(0, 0))
+# CL1 = CascadeLines(nlines=200, lengthrange=(2, 1000), distrange=(10, 800), pensizerange=(1, 10), rotation=10, color='white', position=(0, 0))
 # DrawPath(CL1, colors=rainbow1, pensize=(1, 20))
-
+#
 
 # tt2 = TimesTable(300, 200, 3, 200, color=rainbow1, rotation=180)
 # tt2.draw()
@@ -1722,8 +2056,8 @@ dot(size=6)
 # DrawPath(wav1, 2, rainbow1)
 
 #
-# ra1 = RadialAngularPattern(300, [[125, 2]], jank=0, turncycle=5, pensize=1, showcenter=False, colors=rainbow1, position=[0, 0], penup=False)
-# ra1.drawpath()
+ra1 = RadialAngularPattern(300, [[125, 2], [75, 5]], jank=0, turncycle=5, pensize=3, showcenter=False, colors=rainbow1, position=[0, 0], penup=False)
+ra1.drawpath()
 # ra2 = Transform(ra1).addpoints(10, 50)
 # print(len(ra2))
 # cld1 = Transform(ra2).generatepointcloud(10, 10)

@@ -835,7 +835,7 @@ class Rectangle(Pattern):
 
 
 class Circle(Pattern):
-    def __init__(self, width=50, height=50, pensize=1, position=(0, 0), length=25,
+    def __init__(self, width=10, height=10, pensize=1, position=(0, 0), length=25,
                  color='yellow', cosin=False):
         if isinstance(color, list):
             color = color[0]
@@ -872,8 +872,6 @@ class Circle(Pattern):
         turtle.end_poly()
         circle = [tuple(i) for i in turtle.get_poly()]
         return circle
-
-
 
 
 class RadialAngularPattern(Pattern):
@@ -1634,14 +1632,14 @@ class LVL2:
 
     @staticmethod
     def spiral_spiral(reps=30, rotation=5, linedist=10, diameter=10, scale=20,
-                      poly=400, centerdist=0, colors=color_list):
+                      poly=400, centerdist=0, colors=color_list, pensize=1):
         rotate = 0
         for i in range(reps):
             colind = i % len(colors)
             col = colors[colind]
             spiral = SpiralPattern(linedist=linedist, diameter=diameter,
                                    scale=scale, poly=poly,
-                                   centerdist=centerdist, color=col)
+                                   centerdist=centerdist, color=col, pensize=pensize)
             Transform(spiral).rotate(rotate)
             spiral.draw()
             rotate += rotation
@@ -1928,7 +1926,6 @@ class LVL2:
                                 individualrotation, rotationcenter, position, draworig, branches)
 
 
-
 def closest_point(node, nodes):
     closest_index = distance.cdist([node], nodes).argmin()
     return closest_index
@@ -1965,7 +1962,7 @@ try1 = {'r': [0, 255], 'g': [0, 255], 'b': [0, 255]}
 hot1 = {'r': [0, 255, 255, 255], 'g': [0, 0, 255], 'b': [0, 0]}
 hot1 = {'r': [0, 255, 255], 'g': [0, 0, 255], 'b': [0, 0, 0, 60]}
 
-rainbow1 = ColorScheme(rainbow, 600)
+rainbow1 = ColorScheme(rainbow, 72)
 rainbow2 = ColorScheme(rainbow, 30)
 hot1 = ColorScheme(hot1, 20)
 
@@ -1975,14 +1972,11 @@ darkgrays = ColorScheme({'r': [0, 60], 'g': [0, 60], 'b': [0, 60]}, 20)
 whiteish = ColorScheme({'r': [50, 220], 'g': [50, 220], 'b': [50, 220]}, 30)
 # darkgrays.shiftlightness(0)
 
-speed = 10
-drawspeed = 1000
+speed = 100
+drawspeed = 100
 setup(drawspeed, 'black', hide=True)
 
 # LVL2.layered_flowers(60, 8, innerdepth=1, rotate=1, colors=rainbow1)
-
-
-
 
 
 
@@ -1991,24 +1985,29 @@ rain3 = ColorScheme(rainbow, 94)
 
 
 # THIS ONE!
-# wvs = LVL2.sin_avg_point_rotation(600, 1, 0, -130, rotaterate=1, individualrotation=2, length=2, amplitude=100, ampshift=0, wlshift=0, lenshift=0,
-#                                   cosine=False, colors=whiteish, pensize=1, connectends=0, draworig=False, position=(0, 0), showpoint=True)
-# LVL2.layered_flowers(colors=whiteish, rotate=2)
-# LVL2.spiral_spiral(30, colors=whiteish, diameter=20)
-# it1 = LVL2.iterative_rotation(Square, colors=rainbow1)
+# wvs = LVL2.sin_avg_point_rotation(600, 1, 0, -10fd, rotaterate=1, individualrotation=2, length=2, amplitude=100, ampshift=0, wlshift=0, lenshift=0,
+#                                   cosine=False, colors=rainbow1, pensize=1, connectends=0, draworig=False, position=(0, 0), showpoint=True)
+# ra1 = RadialAngularPattern(10)
+# DrawPath(ra1, colors=rainbow)
+# LVL2.layered_flowers(colors=rainbow1, rotate=2)
+LVL2.spiral_spiral(72, 5, linedist=100, colors=rainbow1, diameter=20, centerdist=10, pensize=4)
+# it1 = LVL2.iterative_rotation(Circle, reps=30, colors=rainbow1)
+# test = Circle()
+# test.draw()
 
 
-LVL2.random_iterative_rotation(colors=rainbow)
+
+# LVL2.random_iterative_rotation(colors=rainbow)
 
 # LVL2.iterative_rotation(Rectangle, reps=94, xshift=0.5, yshift=1.2, stretch=20.33, length=10, depth=6, stretchshift=-1, lenshift=1, depthshift=1, individualrotation=0.72, rotationcenter=(-212, -29), branches=5, colors=rain3)
 
 
-def sin(start=0, end=2*np.pi, res=):
-
-    return (A + ramp * theta) * np.sin(wl * theta + x_shift) + y_shift
-
-
-
+# def sin(start=0, end=2*np.pi, res=):
+#
+#     return (A + ramp * theta) * np.sin(wl * theta + x_shift) + y_shift
+#
+#
+#
 
 
 
