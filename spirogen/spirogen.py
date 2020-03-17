@@ -1,20 +1,9 @@
 import turtle
 import numpy as np
-from math import *
 from matplotlib.colors import rgb2hex as pltcolors
-from scipy.spatial import distance
-from peepdis import peep
+from math import *
 
-# TODO: make draw function center like drawpath does
-# TODO: Rewrite Analysis methods
-"""
-I just finished repairing the dot function so that it doesn't draw lines on its way to and from the dot point.
-Next I need to fix the auto-centering functionality within RAPs. 
-More of the analysis functions need to be rewritten and reimplimented
-Same with Transform functions
-"""
-
-color_list = [
+default_color_list = [
     'red', 'crimson', 'orangered', 'darkorange', 'orange', 'gold',
     'yellow', 'greenyellow', 'lawngreen', 'limegreen', 'springgreen',
     'mediumspringgreen', 'aquamarine', 'turquoise', 'aqua',
@@ -23,16 +12,20 @@ color_list = [
 ]
 
 
-def setup(genspeed=1, backgroundcolor='black', hide=True):
+def setup(genspeed=1, turtlespeed=10, backgroundcolor='black', hide=True, resolution=(1920, 1200)):
     if hide:
         turtle.hideturtle()
-    turtle.setup(1920, 1200)  # Laptop screen
+    turtle.setup(*resolution)  # Laptop screen
     # turtle.setup(3840, 2200)     # 4K screen
     turtle.color('white')
-    turtle.speed(speed)
+    turtle.speed(turtlespeed)
     turtle.bgcolor(backgroundcolor)
     turtle.tracer(genspeed, 0)
     turtle.pensize(1)
+    global speed
+    speed = turtlespeed
+    global drawspeed
+    drawspeed = genspeed
 
 
 class Transform:
@@ -44,7 +37,6 @@ class Transform:
             self.inputxy = func
         elif isinstance(func, (Pattern, PolarPattern, SpiralPattern, TimesTable)):
             inputxy = func.list
-            # print('Transform inputxy: ', inputxy)
             self.inputxy = func.list
         if not isinstance(inputxy[0], list):
             inputxy = [list(lst) for lst in inputxy]
@@ -68,10 +60,7 @@ class Transform:
                 if not isinstance(i, (float, int)):
                     print('Transform might fail, item not an integer: ', i, type(i))
 
-            # self.xlist = [i[0] for i in inputxy]
-            # self.ylist = [i[1] for i in inputxy]
         self.list = [c for c in zip(self.xlist, self.ylist)]
-        # print('Transform self.list: ', self.list)
         if self.ldepth == 1:
             self.cartesianlist = [self.pol2cart(pc[0], pc[1]) for pc in inputxy]
             self.polarlist = [self.cart2pol(xy[0], xy[1]) for xy in inputxy]
@@ -220,6 +209,7 @@ class Transform:
         elif self.ldepth == 2:
             for lst in self.inputxy:
                 for coord in lst:
+                    print(f"coord: {coord}")
                     center_x, center_y = coord[0], coord[1]
                     for i in range(density):
                         radius = (np.random.exponential(exp) * spread)
@@ -287,14 +277,6 @@ class Analyze:
             yavg = sum(ys) / len(xs)
             avg = (xavg, yavg)
             center = avg
-        # elif self.ldepth >= 2:
-        #     avglst = []
-        #     for lst in self.funclist:
-        #         for i in lst:
-        #             print(i)
-        #             avgs.append(self.avgcoord(i))
-        #             print('avg: ', self.avgcoord([i]))
-        #     print('ldepth greater than 1 not set in centering method within analyze class')
         if show is True:
             self.drawdots(center)
         return center
@@ -306,9 +288,6 @@ class Analyze:
         for i in range(len(coords)):
             i2 = ((i + 1) % len(coords))
             dist, xdist, ydist = self.distance(coords[i], coords[i2], seperate=True)
-            # xdist = round(coords[i][0] - coords[i2][0], 6)
-            # ydist = round(coords[i][1] - coords[i2][1], 6)
-            # dist = round(sqrt((xdist ** 2) + (ydist ** 2)), 2)
             distlist.append(dist)
             xydistlist.append((xdist, ydist))
         return distlist, xydistlist
@@ -339,17 +318,6 @@ class Analyze:
             return avgcoord
         else:
             return None
-        # elif self.ldepth == 2:
-        #     for lst in coords:
-        #         print('lst', lst)
-        #         # for point in lst:
-                #     xs, ys = [xy[0] for xy in pint], [xy[1] for xy in point]
-                #     if len(xs) and len(ys) > 0:
-                #         xavg, yavg = sum(xs) / len(xs), sum(ys) / len(ys)
-                #         avgcoord = (xavg, yavg)
-                #         return avgcoord
-                #     else:
-                #         return None
 
 
     @staticmethod
@@ -361,6 +329,30 @@ class Analyze:
             return dist, xdist, ydist
         else:
             return dist
+
+
+class Colors:
+    @staticmethod
+    def rainbow(n_colors=100):
+        scheme = {'r': [[255, 255], [255, 255], [255, 220], [220, 75], [75, 3], [3, 3], [3, 30], [30, 125], [125, 220], [220, 255]],
+                   'g': [[0, 150], [150, 255], [255, 255], [255, 255], [255, 255], [255, 145], [145, 3], [3, 3], [3, 3], [3, 0]],
+                   'b': [[0, 0], [0, 0], [0, 3], [3, 3], [3, 240], [240, 255], [255, 255], [255, 255], [255, 255], [255, 0]]}
+        return ColorScheme(scheme, n_colors)
+
+    @staticmethod
+    def grayscale1(n_colors=100):
+        scheme = {'r': [0, 255], 'g': [0, 255], 'b': [0, 255]}
+        return ColorScheme(scheme, n_colors)
+
+    @staticmethod
+    def hot1(n_colors):
+        scheme = {'r': [0, 255, 255, 255], 'g': [0, 0, 255], 'b': [0, 0]}
+        return ColorScheme(scheme, n_colors)
+
+    @staticmethod
+    def hot2(n_colors):
+        scheme = {'r': [0, 255, 255], 'g': [0, 0, 255], 'b': [0, 0, 0, 60]}
+        return ColorScheme(scheme, n_colors)
 
 
 class ColorScheme:
@@ -614,20 +606,20 @@ class Pattern:
                 return 2
 
     def simpledraw(self):
-        print('lvl1')
+        # print('lvl1')
         for ind in range(len(self.list)):
             self.colorcycle(ind)
             turtle.goto(self.list[ind])
 
     def lvl2draw(self):
-        print('lvl2')
+        # print('lvl2')
         for lst in self.list:
             for ind in range(len(lst)):
                 self.colorcycle(ind)
                 turtle.goto(lst[ind])
 
     def lvl3draw(self):
-        print('lvl3')
+        # print('lvl3')
         for group in self.list:
             for lst in group:
                 for ind in range(len(lst)):
@@ -835,7 +827,7 @@ class Rectangle(Pattern):
 
 
 class Circle(Pattern):
-    def __init__(self, width=10, height=10, pensize=1, position=(0, 0), length=25,
+    def __init__(self, width=50, height=50, pensize=1, position=(0, 0), length=25,
                  color='yellow', cosin=False):
         if isinstance(color, list):
             color = color[0]
@@ -877,7 +869,7 @@ class Circle(Pattern):
 class RadialAngularPattern(Pattern):
 
     def __init__(self, size, angles=[[125, 3]], turncycle=0, jank=None,
-                 colors=color_list, pensize=1, position=[0, 0], showcenter=False, penup=False):
+                 colors=default_color_list, pensize=1, position=[0, 0], showcenter=False, penup=False):
         self._size = size
         self._turns = angles
         self._turncycle = turncycle
@@ -1296,6 +1288,10 @@ class TimesTable:
     def draw(self, drawcircle=True, penup=False):
         biglist = []
         turtle.pensize(self._pensize)
+        if penup:
+            turtle.penup()
+        else:
+            turtle.pendown()
         if drawcircle:
             self.draw_circle()
         self.goto(self.ring[0], True)
@@ -1369,7 +1365,7 @@ class CascadeLines(Pattern):
 class LVL2:
     @staticmethod
     def layered_flowers(layers=30, npetals=6, innerdepth=3, sizefactor=2,
-                        pensize=1, rotate=0, rotaterate=1, colors=color_list,
+                        pensize=1, rotate=0, rotaterate=1, colors=default_color_list,
                         position=[0, 0]):
         sf = 1
         rotationfactor = 1
@@ -1394,7 +1390,7 @@ class LVL2:
 
     @staticmethod
     def sin_spiral(strands=20, xshift=10, yshift=0, rotate=0, rotaterate=1,
-                   rotatecenter=[0, 0], colors=color_list, wavelength=50, amplitude=100, wlshift=0,
+                   rotatecenter=[0, 0], colors=default_color_list, wavelength=50, amplitude=100, wlshift=0,
                    ampshift=0, length=20, cosine=False, position=[0, 0]):
         funclist = []
         xpos, ypos = position[0], position[1]
@@ -1432,7 +1428,7 @@ class LVL2:
     @staticmethod
     def sin_avg_point_rotation(strands=20, xshift=10, yshift=0,
                                rotate=1, rotaterate=1, individualrotation=0, totalrotation=None,
-                               colors=color_list, wavelength=50, amplitude=100, wlshift=0,
+                               colors=default_color_list, wavelength=50, amplitude=100, wlshift=0,
                                ampshift=0, length=25, lenshift=0, idkyet=False, cosine=False, pensize=1, connectends=False, webends=False,
                                position=[0, 0], showpoint=False, draworig=False, getpoint=False):
         funclist = []
@@ -1632,20 +1628,20 @@ class LVL2:
 
     @staticmethod
     def spiral_spiral(reps=30, rotation=5, linedist=10, diameter=10, scale=20,
-                      poly=400, centerdist=0, colors=color_list, pensize=1):
+                      poly=400, centerdist=0, colors=default_color_list):
         rotate = 0
         for i in range(reps):
             colind = i % len(colors)
             col = colors[colind]
             spiral = SpiralPattern(linedist=linedist, diameter=diameter,
                                    scale=scale, poly=poly,
-                                   centerdist=centerdist, color=col, pensize=pensize)
+                                   centerdist=centerdist, color=col)
             Transform(spiral).rotate(rotate)
             spiral.draw()
             rotate += rotation
 
     @staticmethod
-    def antenas(colors=color_list, xshift=5, yshift=0, position=[100, 100]):
+    def antenas(colors=default_color_list, xshift=5, yshift=0, position=[100, 100]):
         xloc, yloc = position[0], position[1]
         for i in range(10):
             colind = i % len(colors)
@@ -1953,138 +1949,6 @@ def dot(loc=(0, 0), size=3, color='white'):
     turtle.color(color)
     turtle.dot(size)
 
-
-rainbow = {'r': [[255, 255], [255, 255], [255, 220], [220,  75], [75,    3], [3,     3], [3,    30], [30,  125], [125, 220], [220, 255]],
-           'g': [[0,   150], [150, 255], [255, 255], [255, 255], [255, 255], [255, 145], [145,   3], [3,     3], [3,     3], [3,     0]],
-           'b': [[0,     0], [0,     0], [0,     3], [3,     3], [3,   240], [240, 255], [255, 255], [255, 255], [255, 255], [255,   0]]}
-
-try1 = {'r': [0, 255], 'g': [0, 255], 'b': [0, 255]}
-hot1 = {'r': [0, 255, 255, 255], 'g': [0, 0, 255], 'b': [0, 0]}
-hot1 = {'r': [0, 255, 255], 'g': [0, 0, 255], 'b': [0, 0, 0, 60]}
-
-rainbow1 = ColorScheme(rainbow, 72)
-rainbow2 = ColorScheme(rainbow, 30)
-hot1 = ColorScheme(hot1, 20)
-
-try1 = ColorScheme(try1, 1000)
-
-darkgrays = ColorScheme({'r': [0, 60], 'g': [0, 60], 'b': [0, 60]}, 20)
-whiteish = ColorScheme({'r': [50, 220], 'g': [50, 220], 'b': [50, 220]}, 30)
-# darkgrays.shiftlightness(0)
-
-speed = 100
-drawspeed = 100
-setup(drawspeed, 'black', hide=True)
-
-# LVL2.layered_flowers(60, 8, innerdepth=1, rotate=1, colors=rainbow1)
-
-
-
-rain3 = ColorScheme(rainbow, 94)
-
-
-
-# THIS ONE!
-# wvs = LVL2.sin_avg_point_rotation(600, 1, 0, -10fd, rotaterate=1, individualrotation=2, length=2, amplitude=100, ampshift=0, wlshift=0, lenshift=0,
-#                                   cosine=False, colors=rainbow1, pensize=1, connectends=0, draworig=False, position=(0, 0), showpoint=True)
-# ra1 = RadialAngularPattern(10)
-# DrawPath(ra1, colors=rainbow)
-# LVL2.layered_flowers(colors=rainbow1, rotate=2)
-LVL2.spiral_spiral(72, 5, linedist=100, colors=rainbow1, diameter=20, centerdist=10, pensize=4)
-# it1 = LVL2.iterative_rotation(Circle, reps=30, colors=rainbow1)
-# test = Circle()
-# test.draw()
-
-
-
-# LVL2.random_iterative_rotation(colors=rainbow)
-
-# LVL2.iterative_rotation(Rectangle, reps=94, xshift=0.5, yshift=1.2, stretch=20.33, length=10, depth=6, stretchshift=-1, lenshift=1, depthshift=1, individualrotation=0.72, rotationcenter=(-212, -29), branches=5, colors=rain3)
-
-
-# def sin(start=0, end=2*np.pi, res=):
-#
-#     return (A + ramp * theta) * np.sin(wl * theta + x_shift) + y_shift
-#
-#
-#
-
-
-
-# dot(loc=(0, 0), size=3, color='red')
-# DrawPath(wvs, colors=rainbow1)
-
-
-# tt1 = TimesTable(300, 200, 2, 200, color=hot1[-5: -1], rotation=0)
-# ttcld = Transform(tt1).generatepointcloud(5, 5)
-# DrawPath(ttcld, dots=True, lines=False, colors=hot1[-1])
-# wvs = LVL2.sin_spiral(30, 5, 0, 1, cosine=False, length=25)
-# DrawPath(wvs, colors=rainbow1, colordist=20, colorsync=True, pensize=(1, 20))
-# wvcld = Transform(wvs).generatepointcloud(5, 5)
-# DrawPath(wvcld, dots=True, lines=False, colors=hot1, colordistthresh=200)
-
-# flower1 = FlowerPattern2(8, 3, 10, reps=80)
-# DrawPath(flower1)
-
-# flwrcld = Transform(flower1).generatepointcloud(5, 5)
-# DrawPath(flwrcld, dots=True, lines=False)
-# flower1 = SpiralPattern(1, 80)
-# for i in range(20):
-#     DrawPath(flower1, colors=darkgrays[i], pensize=5)
-#     flower1 = Transform(flower1).origin_rotate(15)
-#     flower1 = Transform(flower1).xscale(1.1)
-#     flower1 = Transform(flower1).yscale(1.1)
-#     # flower1 = Transform(flower1). xshift(3)
-
-# cld1 = Transform(flower1).generatepointcloud(10, 5)
-# cld2 = Tr/ansform(flower2).generatepointcloud(10, 5)
-# cld3 = Transform(flower3).generatepointcloud(10, 5)
-# DrawPath(flower1, colors=rainbow1)
-# DrawPath(cld1, lines=False, dots=True, colors='orange')
-# DrawPath(cld2, lines=False, dots=True, colors='gold')
-# DrawPath(cld3, lines=False, dots=True)
-
-# for i in range(20):
-#     tt1 = TimesTable(300, 200, 1, 200, color=rainbow1)
-#     tt2 = TimesTable(300 - (i * 2), 200, 2, 200, color=rainbow1, rotation=i*2)
-#     tt1.draw()
-#     tt2.draw()
-
-
-
-
-# tt1.draw(drawcircle=True)
-
-# CL1 = CascadeLines(nlines=160, lengthrange=(5, 500), distrange=(10, 600), pensizerange=(1, 10), rotation=10, color='white', position=(0, 0))
-# DrawPath(CL1, colors=rainbow1, pensize=(1, 20))
-
-
-# tt2 = TimesTable(300, 200, 3, 200, color=rainbow1, rotation=180)
-# tt2.draw()
-
-# DrawPath(flower1, colors=rainbow1, colordist=40)
-
-
-
-# wav1 = Wave(stretch=100, height=300, length=10, cosin=True, pensize=1)
-# print(len(wav1))
-# wav1 = Transform(wav1).addpoints(5, 10)
-# cloud1 = Transform(wav1).generatepointcloud(10, 2)
-# DrawPath(cloud1, lines=False, dots=True, dotsize=1)
-# DrawPath(wav1, 2, rainbow1)
-
-#
-# ra1 = RadialAngularPattern(300, [[125, 2]], jank=0, turncycle=5, pensize=1, showcenter=False, colors=rainbow1, position=[0, 0], penup=False)
-# ra1.drawpath()
-# ra2 = Transform(ra1).addpoints(10, 50)
-# print(len(ra2))
-# cld1 = Transform(ra2).generatepointcloud(10, 10)
-# DrawPath(cld1, lines=True, dots=False, colors=darkgrays, pensize=2)
-# DrawPath(cld2, lines=True, dots=False, colors=rainbow1)
-# DrawPath(cld1, lines=False, dots=True, dotsize=1, colors=whiteish)
-# ra1.drawpath()
-# DrawPath(ra2, colors=rainbow1)
-
-turtle.hideturtle()
-
-turtle.exitonclick()
+def wait():
+    turtle.hideturtle()
+    turtle.exitonclick()
