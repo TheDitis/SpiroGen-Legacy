@@ -334,9 +334,10 @@ class Analyze:
 class Colors:
     @staticmethod
     def rainbow(n_colors=100):
-        scheme = {'r': [[255, 255], [255, 255], [255, 220], [220, 75], [75, 3], [3, 3], [3, 30], [30, 125], [125, 220], [220, 255]],
-                   'g': [[0, 150], [150, 255], [255, 255], [255, 255], [255, 255], [255, 145], [145, 3], [3, 3], [3, 3], [3, 0]],
-                   'b': [[0, 0], [0, 0], [0, 3], [3, 3], [3, 240], [240, 255], [255, 255], [255, 255], [255, 255], [255, 0]]}
+        scheme = {
+            'r': [[255, 255], [255, 255], [255, 220], [220, 75], [75, 3], [3, 3], [3, 30], [30, 125], [125, 220], [220, 255]],
+            'g': [[0, 150], [150, 255], [255, 255], [255, 255], [255, 255], [255, 145], [145, 3], [3, 3], [3, 3], [3, 0]],
+            'b': [[0, 0], [0, 0], [0, 3], [3, 3], [3, 240], [240, 255], [255, 255], [255, 255], [255, 255], [255, 0]]}
         return ColorScheme(scheme, n_colors)
 
     @staticmethod
@@ -1056,9 +1057,10 @@ class RadialAngularPattern(Pattern):
 
 class FlowerPattern(PolarPattern):
     def __init__(self, npetals, innerdepth=3, size=50, poly=500, color='green',
-                 position=[0, 0]):
+                 position=[0, 0], pensize=1):
         self._npetals = npetals
         self._innerdepth = innerdepth
+        self._pensize = pensize
         if isinstance(color, (ColorScheme, ColorScheme)):
             color = color.hex
         if isinstance(color, list):
@@ -1068,7 +1070,7 @@ class FlowerPattern(PolarPattern):
         radianlist = np.linspace(0, 7, poly)
         radiuslist = [(3 - (innerdepth * cos(npetals * theta))) for theta in
                       radianlist]
-        super().__init__(radianlist, radiuslist, size, position)
+        super().__init__(radianlist, radiuslist, size, position, pensize)
 
 
 class SpiralPattern(PolarPattern):
@@ -1377,7 +1379,7 @@ class LVL2:
                 color2 = colors[colind]
             else:
                 color2 = colors
-            f = FlowerPattern(npetals, innerdepth, sf, color=color2)
+            f = FlowerPattern(npetals, innerdepth, sf, color=color2, pensize=pensize)
             sf += 1 * sizefactor
             if rotate != 0:
                 Transform(f).rotate(rotate * rotationfactor)
@@ -1385,7 +1387,6 @@ class LVL2:
             if position != [0, 0]:
                 Transform(f).xshift(position[0])
                 Transform(f).yshift(position[1])
-            turtle.pensize(pensize)
             f.draw()
 
     @staticmethod
@@ -1949,6 +1950,15 @@ def dot(loc=(0, 0), size=3, color='white'):
     turtle.color(color)
     turtle.dot(size)
 
+
 def wait():
     turtle.hideturtle()
     turtle.exitonclick()
+
+
+def reset():
+    turtle.reset()
+
+
+def bye():
+    turtle.bye()
