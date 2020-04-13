@@ -78,7 +78,7 @@ class PatternTab(Tab):
         self.progparams = {}
 
         super().__init__(master)
-        self.anglearea = Frame(self)
+        self.spacedarea = Frame(self)
 
         # Setting dropdown menu for selecting pattern type
         patterns = ['layeredflowers', 'radialangular']
@@ -111,15 +111,17 @@ class PatternTab(Tab):
         for p in self.parameters.values():
             p.grid_forget()
 
-        size = Parameter(self, label="Size", from_=100, to=1000, row=3)
+        size = Parameter(self, label="Size", from_=10, to=1000, row=3)
         size.set(500)
 
         n_angles = IntVar(self)
 
-        self.anglearea.grid(row=6, column=0, columnspan=800)
+        self.spacedarea.grid(row=6, column=0, columnspan=800)
+
+        pensize =  Parameter(self, label="Pen Size", from_=1, to=40, row=10)
         # self.anglearea.grid_columnconfigure(weight=1)
 
-        self.parameters = {"size": size}  # for the parameters that feed into the pattern function
+        self.parameters = {"size": size, 'pensize': pensize}  # for the parameters that feed into the pattern function
         self.progparams = {'n_angles': n_angles}  # for the parameters that help create function parameters, but dont feed in directly
 
         options = [1, 2, 3, 4]  # number of possible angles
@@ -134,30 +136,52 @@ class PatternTab(Tab):
     def make_angle_boxes(self, *args):
         menu = self.progparams['n_angles']
         n = menu.get()
+        prevparams = []
         if 'angleparams' in self.progparams.keys():
             for box in self.progparams['angleparams']:
-                for widget in box:
+                entry = []
+                for i, widget in enumerate(box):
+                    print(i)
+
+                    if i == 0 or i == 2:
+                        entry.append(widget.get())
                     widget.grid_forget()
+                prevparams.append(entry)
+        print(prevparams)
+
         self.progparams['angleparams'] = []
-        # if 'curveboxes' in self.progparams.keys():
-        #     for box in self.progparams['curveboxes']:
-        #         box[0].grid_forget()  # remove box
-        #         box[1].grid_forget()  # and remove it's label
-        # self.progparams['curveboxes'] = []
+        if 'turncycle' in self.parameters.keys():
+            self.parameters['turncycle'].grid_forget()
+        if 'jank' in self.parameters.keys():
+            self.parameters['jank'].grid_forget()
 
         for i in range(n):
-            anglevar = IntVar()
-            anglebox = Entry(self.anglearea, width=5, textvariable=anglevar)
-            label1 = Label(self.anglearea, text=f"angle {str(i+1)}")
-            curvevar = IntVar()
-            curvebox = Entry(self.anglearea, width=5, textvariable=curvevar)
-            label2 = Label(self.anglearea, text=f"curve {str(i+1)}")
-            if i == 0:
-                anglevar.set(125)
-                curvevar.set(5)
+            anglevar = StringVar()
+            # anglevar.trace('w', self.set_angles)
+            anglebox = Entry(self.spacedarea, width=5, textvariable=anglevar)
+            label1 = Label(self.spacedarea, text=f"angle {str(i + 1)}")
+
+            curvevar = StringVar()
+            # curvevar.trace('w', self.set_angles)
+            curvebox = Entry(self.spacedarea, width=5, textvariable=curvevar)
+            label2 = Label(self.spacedarea, text=f"curve {str(i + 1)}")
+            if len(prevparams) > i:
+                anglevar.set(prevparams[i][0])
+                curvevar.set(prevparams[i][1])
             else:
-                anglevar.set(0)
-                curvevar.set(0)
+                if i == 0:
+                    anglevar.set(125)
+                    curvevar.set(5)
+                else:
+                    anglevar.set(0)
+                    curvevar.set(0)
+            if i == 1:
+                turncycle = Scale(self.spacedarea, orient='horizontal', from_=0, to=5, label='turn cycle')
+                turncycle.grid(row=9, column=100, rowspan=3)
+                jank = Scale(self.spacedarea, orient='horizontal', from_=0, to=600, label="jank")
+                jank.grid(row=12, column=100, rowspan=3)
+                self.parameters['turncycle'] = turncycle
+                self.parameters['jank'] = jank
 
             col = 20 * (i + 1)  # just so that I have flexibility in positioning things later if I make changes
             label1.grid(row=9, column=col, pady=10)
@@ -168,6 +192,21 @@ class PatternTab(Tab):
                 [anglebox, label1, curvebox, label2]
             )
             # self.progparams['curveboxes'].append([curvebox, label2])
+
+    def set_angles(self, *args):
+        angleparams = self.progparams['angleparams']
+        angles = [[i[0].get(), i[2].get()] for i in angleparams]
+
+        for i in range(len(angles)):
+            angle = angles[i]
+            # print('angle', angle)
+            for j in range(len(angle)):
+                val = angle[j]
+                try:
+                    angles[i][j] = float(val)
+                except ValueError:
+                    print("angle values must be numerical!")
+        self.parameters['angles'] = [i for i in angles if i[0] != 0]
 
     def setpattern(self, *args):
         # self.runbutton['command'] = func
@@ -186,26 +225,21 @@ class PatternTab(Tab):
         smaller_resolution = (1520, 800)
         print('running')
         setup(drawspeed, speed, 'black', hide=True, resolution=default_resolution)
-        parameters = {k: v.get() for k, v in self.parameters.items()}
+        # parameters = {k: v.get() for k, v in self.parameters.items() if isinstance(v, Widget)}
+        parameters = {}
+        for param in self.parameters.items():
+            label, value = param[0], param[1]
+            if not isinstance(value, (int, float, str, list, tuple)):
+                parameters[label] = value.get()
+            else:
+                parameters[label] = value
+
         if self.patternselection.get() == "layeredflowers":
             LVL2.layered_flowers(**parameters, colors=colorscheme)
         elif self.patternselection.get() == "radialangular":
-            angleparams = self.progparams['angleparams']
-            angles = [[i[0].get(), i[2].get()] for i in angleparams]
-
-            for i in range(len(angles)):
-                angle = angles[i]
-                print('angle', angle)
-                for j in range(len(angle)):
-                    val = angle[j]
-                    try:
-                        angles[i][j] = float(val)
-                    except ValueError:
-                        print("angle values must be numerical!")
-
-            angles = [i for i in angles if i[0] != 0]
-            print(angles)
-            RadialAngularPattern(**parameters, angles=angles, turncycle=1, colors=colorscheme).drawpath()
+            self.set_angles()
+            print(self.parameters)
+            RadialAngularPattern(**parameters, colors=colorscheme).drawpath()
         wait()
 
 

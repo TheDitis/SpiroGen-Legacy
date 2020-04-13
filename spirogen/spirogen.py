@@ -661,6 +661,8 @@ class Pattern:
                 turtle.right(angle)
         else:
             reps = round(abs(angle) / 10)
+            if reps == 0:
+                reps = 1
             turn = abs(angle) / reps
             for j in range(reps):
                 turtle.forward(curve)
