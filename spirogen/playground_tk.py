@@ -75,7 +75,7 @@ class Parameter(Scale):
 class PatternTab(Tab):
     def __init__(self, master):
         self.parameters = {}
-        self.functionalparameters = {}
+        self.progparams = {}
 
         super().__init__(master)
         self.anglearea = Frame(self)
@@ -112,16 +112,17 @@ class PatternTab(Tab):
             p.grid_forget()
 
         size = Parameter(self, label="Size", from_=100, to=1000, row=3)
+        size.set(500)
 
         n_angles = IntVar(self)
 
         self.anglearea.grid(row=6, column=0, columnspan=800)
         # self.anglearea.grid_columnconfigure(weight=1)
 
-        self.parameters = {"size": size}
-        self.functionalparameters = {'n_angles': n_angles}
+        self.parameters = {"size": size}  # for the parameters that feed into the pattern function
+        self.progparams = {'n_angles': n_angles}  # for the parameters that help create function parameters, but dont feed in directly
 
-        options = [1, 2, 3, 4]
+        options = [1, 2, 3, 4]  # number of possible angles
         n_angles.trace('w', self.make_angle_boxes)
         n_angles.set(options[0])
 
@@ -131,26 +132,42 @@ class PatternTab(Tab):
         n_angles_menu.grid(row=5, column=400)
 
     def make_angle_boxes(self, *args):
-        menu = self.functionalparameters['n_angles']
+        menu = self.progparams['n_angles']
         n = menu.get()
-        if 'angleboxes' in self.functionalparameters.keys():
-            for box in self.functionalparameters['angleboxes']:
-                box.grid_forget()
-        self.functionalparameters['angleboxes'] = []
-
-        deg_label = Label(self.anglearea, text="Turn Angle (deg):", anchor='w', width=40)
-        deg_label.grid(row=10, column=0, ipadx=20)
+        if 'angleparams' in self.progparams.keys():
+            for box in self.progparams['angleparams']:
+                for widget in box:
+                    widget.grid_forget()
+        self.progparams['angleparams'] = []
+        # if 'curveboxes' in self.progparams.keys():
+        #     for box in self.progparams['curveboxes']:
+        #         box[0].grid_forget()  # remove box
+        #         box[1].grid_forget()  # and remove it's label
+        # self.progparams['curveboxes'] = []
 
         for i in range(n):
-            # inputvar = DoubleVar()
-            answerbox = Entry(self.anglearea, width=5)
-            label = Label(self.anglearea, text=str(i))
+            anglevar = IntVar()
+            anglebox = Entry(self.anglearea, width=5, textvariable=anglevar)
+            label1 = Label(self.anglearea, text=f"angle {str(i+1)}")
+            curvevar = IntVar()
+            curvebox = Entry(self.anglearea, width=5, textvariable=curvevar)
+            label2 = Label(self.anglearea, text=f"curve {str(i+1)}")
+            if i == 0:
+                anglevar.set(125)
+                curvevar.set(5)
+            else:
+                anglevar.set(0)
+                curvevar.set(0)
 
-            col = 20 * i
-            print(col)
-            label.grid(row=9, column=col, pady=10)
-            answerbox.grid(row=10, column=col, padx=20)
-            self.functionalparameters['angleboxes'].append(answerbox)
+            col = 20 * (i + 1)  # just so that I have flexibility in positioning things later if I make changes
+            label1.grid(row=9, column=col, pady=10)
+            anglebox.grid(row=10, column=col, padx=20)
+            label2.grid(row=12, column=col, padx=20)
+            curvebox.grid(row=14, column=col)
+            self.progparams['angleparams'].append(
+                [anglebox, label1, curvebox, label2]
+            )
+            # self.progparams['curveboxes'].append([curvebox, label2])
 
     def setpattern(self, *args):
         # self.runbutton['command'] = func
@@ -173,7 +190,23 @@ class PatternTab(Tab):
         if self.patternselection.get() == "layeredflowers":
             LVL2.layered_flowers(**parameters, colors=colorscheme)
         elif self.patternselection.get() == "radialangular":
-            RadialAngularPattern(**parameters, angles=[[125, 0], [75, 0], [32], [55]], colors=colorscheme).drawpath()
+            angleparams = self.progparams['angleparams']
+            angles = [[i[0].get(), i[2].get()] for i in angleparams]
+
+            for i in range(len(angles)):
+                angle = angles[i]
+                print('angle', angle)
+                for j in range(len(angle)):
+                    val = angle[j]
+                    try:
+                        angles[i][j] = float(val)
+                    except ValueError:
+                        print("angle values must be numerical!")
+
+            angles = [i for i in angles if i[0] != 0]
+            print(angles)
+            RadialAngularPattern(**parameters, angles=angles, turncycle=1, colors=colorscheme).drawpath()
+        wait()
 
 
 class ColorSchemeTab(Tab):
@@ -241,15 +274,15 @@ def main():
 
 
 
-    speed = 10
-    drawspeed = 1000
+    # speed = 10
+    # drawspeed = 1000
     default_resolution = (1920, 1200)
-    setup(drawspeed, speed, 'black', hide=True, resolution=(1520, 800))
+    # setup(drawspeed, speed, 'black', hide=True, resolution=(1520, 800))
     #
     # # Do stuff here
     # LVL2.layered_flowers(60, 8, innerdepth=1, rotate=1, colors=rainbow1)
     #
-    wait()
+    # wait()
     root.mainloop()
 
 
