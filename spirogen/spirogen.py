@@ -1163,7 +1163,7 @@ class DrawPath:
             turtle.pendown()
 
     def colorset(self):
-        if isinstance(self.colors, (ColorScheme, ColorScheme)):
+        if isinstance(self.colors, (Colors, ColorScheme)):
             self.colors = self.colors.hex
         elif isinstance(self.colors, str):
             self.colors = [self.colors]
@@ -1201,7 +1201,7 @@ class DrawPath:
                 if isinstance(self.pensize, (np.ndarray, list, tuple)):
                     pensind = j % len(self.pensize)
                     turtle.pensize(self.pensize[pensind])
-                colind = j % len(self.coordlist)
+                colind = j % len(self.colors)
                 turtle.color(self.colors[colind])
                 self.goto(self.coordlist[j][0], 1)
                 for i in range(len(self.coordlist[j])):
