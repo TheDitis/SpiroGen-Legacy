@@ -2,6 +2,7 @@ from spirogen import setup, Transform, Analyze, Colors, ColorScheme, Pattern, Po
 from functools import partial
 from tkinter import *
 from tkinter import ttk
+from copy import deepcopy
 
 
 class Application(ttk.Notebook):
@@ -302,13 +303,16 @@ class ColorSchemeTab(Tab):
             'g': [0, 150, 255, 255, 255, 255, 145, 3, 3, 3, 0],
             'b': [0, 0, 0, 3, 3, 240, 255, 255, 255, 255, 0]
         }
-        self.staticcolors = self.default.copy()
-        self._colordict = self.default.copy()
+        self.resetcolors = False
+        self.staticcolors = deepcopy(self.default)
+        self._colordict = deepcopy(self.default)
         # self.colordict = self.rainbow.copy()
         self.totalcolors = Parameter(self, label="Total Colors (fade smoothness)", from_=1, to=300, command=self.check_ratio_tot, row=5)
         self.totalcolors.set(100)
         self.colorstops = Parameter(self, label="Number of Stops", from_=1, to=11, command=self.update_colorstops, row=10)
         self.colorstops.set(5)
+        self.defaultcolors = Button(self, text='Load Default Colors', command=self.reset_colors_to_default)
+        self.defaultcolors.grid(row=18, column=3, columnspan=300)
 
         self.spacedarea.grid(row=20, column=0, columnspan=800)
 
@@ -335,13 +339,22 @@ class ColorSchemeTab(Tab):
         self._colordict = val
         # self.update_color_boxes()
 
+    def reset_colors_to_default(self):
+        self.resetcolors = True
+        print('pre:', self.colordict)
+        self.staticcolors = deepcopy(self.default)
+        self.colordict = deepcopy(self.default)
+        print('post:', self.colordict)
+        self.colorshift.set(0)
+        self.update_color_boxes()
+
     def update_colorstops(self, *args):
         self.check_ratio_stops(*args)
         self.make_color_boxes()
 
     def shift_color(self, *args):
         # TODO FIX!
-        colordict = self.staticcolors.copy()
+        colordict = deepcopy(self.staticcolors)
         amt = self.colorshift.get()
         if self.is_default_colors():
             for color in colordict:
@@ -440,7 +453,7 @@ class ColorSchemeTab(Tab):
             blue.trace('w', lambda *x: self.update_color_dict(x, index=i, key='b'))
             bluebox = Entry(self.spacedarea, width=3, textvariable=blue)
 
-            if len(prevparams) > i:
+            if len(prevparams) > i and not self.resetcolors:
                 red.set(prevparams[i][0])
                 green.set(prevparams[i][1])
                 blue.set(prevparams[i][2])
@@ -470,11 +483,11 @@ class ColorSchemeTab(Tab):
 
     def update_color_dict(self, *args, index, key):
         # pass
-        print(key, index)
+        # print(key, index)
         colparams = self.progparams['colorparams']
         values = [i['vals'] for i in colparams]
         examples = [i['example'] for i in colparams]
-        newcols = self.staticcolors.copy()
+        newcols = deepcopy(self.staticcolors)
         for i in range(len(values)):  # for index of values (tk StringVar objects):
             group = values[i]  # group =  {'r': rVar, 'g': gVar, 'b': bVar)
             rgb = []
@@ -490,9 +503,9 @@ class ColorSchemeTab(Tab):
                     rgb.append(val)
             if len(rgb) == 3:
                 examples[i].configure(bg=self.rgb_tk(rgb))
-        for k in self.staticcolors:
-            print(k, self.staticcolors[k])
-        print('\n')
+        # for k in self.staticcolors:
+        #     print(k, self.staticcolors[k])
+        # print('\n')
         # print('static', self.staticcolors)
         # print('coldict', newcols)
         self.colordict = newcols
