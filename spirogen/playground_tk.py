@@ -303,8 +303,8 @@ class ColorSchemeTab(Tab):
             'g': [0, 150, 255, 255, 255, 255, 145, 3, 3, 3, 0],
             'b': [0, 0, 0, 3, 3, 240, 255, 255, 255, 255, 0]
         }
-        self.resetcolors = False
-        self.staticcolors = deepcopy(self.default)
+        self.resetcolors = True
+        # self.colordict = deepcopy(self.default)
         self._colordict = deepcopy(self.default)
         # self.colordict = self.rainbow.copy()
         self.totalcolors = Parameter(self, label="Total Colors (fade smoothness)", from_=1, to=300, command=self.check_ratio_tot, row=5)
@@ -317,6 +317,7 @@ class ColorSchemeTab(Tab):
         self.spacedarea.grid(row=20, column=0, columnspan=800)
 
         self.colorshift = Parameter(self, label="Shift Position", from_=-6, to=6, row=25, command=self.shift_color, bigincrement=1)
+        self.previousshift = 0
 
     @property
     def colorscheme(self):
@@ -342,7 +343,7 @@ class ColorSchemeTab(Tab):
     def reset_colors_to_default(self):
         self.resetcolors = True
         print('pre:', self.colordict)
-        self.staticcolors = deepcopy(self.default)
+        self.colordict = deepcopy(self.default)
         self.colordict = deepcopy(self.default)
         print('post:', self.colordict)
         self.colorshift.set(0)
@@ -354,33 +355,38 @@ class ColorSchemeTab(Tab):
 
     def shift_color(self, *args):
         # TODO FIX!
-        colordict = deepcopy(self.staticcolors)
+        colordict = deepcopy(self.colordict)
         amt = self.colorshift.get()
-        if self.is_default_colors():
+        # if self.is_default_colors():
+        for j in range(abs(amt)):
             for color in colordict:
                 for i in range(len(colordict[color])):
-                    ind = (i + amt) % len(colordict[color])
-                    colordict[color][i] = self.staticcolors[color][ind]
-                    print('regind', i, 'staticind', ind)
-                if self.debug:
+                    interval = amt - self.previousshift
+                    print('interval', interval)
+                    ind = (i - interval) % len(colordict[color])
+                    colordict[color][i] = self.colordict[color][ind]
+                    # print('regind', i, 'staticind', ind)
+                if True:
                     print("shift_color if default:")
-                    print("pre:", self.staticcolors[color])
+                    print("pre:", self.colordict[color])
                     print("post:", colordict[color])
-            self.colordict = colordict
-            self.update_color_boxes()
-        else:
-            print('Cannot shift, colors are not default')
+        self.previousshift = amt
+        self.colordict = colordict
+        self.update_color_boxes()
+
+        # else:
+        #     print('Cannot shift, colors are not default')
 
     def is_default_colors(self):
         for key in self.colordict:
             if key == 'r':
-                def_r = self.staticcolors[key]
+                def_r = self.colordict[key]
                 r = self.colordict[key]
             elif key == 'g':
-                def_g = self.staticcolors[key]
+                def_g = self.colordict[key]
                 g = self.colordict[key]
             elif key == 'b':
-                def_b = self.staticcolors[key]
+                def_b = self.colordict[key]
                 b = self.colordict[key]
         r_match = all(map(lambda x: r.count(x) == def_r.count(x), r))
         g_match = all(map(lambda x: g.count(x) == def_g.count(x), g))
@@ -453,14 +459,14 @@ class ColorSchemeTab(Tab):
             blue.trace('w', lambda *x: self.update_color_dict(x, index=i, key='b'))
             bluebox = Entry(self.spacedarea, width=3, textvariable=blue)
 
-            if len(prevparams) > i and not self.resetcolors:
-                red.set(prevparams[i][0])
-                green.set(prevparams[i][1])
-                blue.set(prevparams[i][2])
-            else:
-                red.set(self.colordict['r'][i])
-                green.set(self.colordict['g'][i])
-                blue.set(self.colordict['b'][i])
+            # if len(prevparams) > i and not self.resetcolors:
+            #     red.set(prevparams[i][0])
+            #     green.set(prevparams[i][1])
+            #     blue.set(prevparams[i][2])
+            # else:
+            red.set(self.colordict['r'][i])
+            green.set(self.colordict['g'][i])
+            blue.set(self.colordict['b'][i])
 
             color = self.rgb_tk((red.get(), green.get(), blue.get()))
             examplebox = Frame(self.spacedarea, width=20, height=15, bg=color)
@@ -478,6 +484,7 @@ class ColorSchemeTab(Tab):
                  'vals': {'r': red, 'g': green, 'b': blue},
                  'label': col_label,
                  'example': examplebox})
+            # self.resetcolors = False
             # pass
             # self.progparams['curveboxes'].append([curvebox, label2])
 
@@ -487,26 +494,26 @@ class ColorSchemeTab(Tab):
         colparams = self.progparams['colorparams']
         values = [i['vals'] for i in colparams]
         examples = [i['example'] for i in colparams]
-        newcols = deepcopy(self.staticcolors)
+        newcols = deepcopy(self.colordict)
         for i in range(len(values)):  # for index of values (tk StringVar objects):
             group = values[i]  # group =  {'r': rVar, 'g': gVar, 'b': bVar)
             rgb = []
             for key in group:  # for 'r', 'g', and 'b':
                 shift = self.colorshift.get()  # get the value of the shift parameter
-                ind = (i + shift) % len(self.staticcolors[key])  # set the index to edit, based on remainder of the index - shift amount
+                ind = (i - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
                 # print(ind)
                 strval = group[key].get()
                 if strval != '':
                     val = int(strval)
-                    self.staticcolors[key][ind] = val
+                    self.colordict[key][ind] = val
                     newcols[key][i] = val
                     rgb.append(val)
             if len(rgb) == 3:
                 examples[i].configure(bg=self.rgb_tk(rgb))
-        # for k in self.staticcolors:
-        #     print(k, self.staticcolors[k])
+        # for k in self.colordict:
+        #     print(k, self.colordict[k])
         # print('\n')
-        # print('static', self.staticcolors)
+        # print('static', self.colordict)
         # print('coldict', newcols)
         self.colordict = newcols
         # self.update_color_boxes()
