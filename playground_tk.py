@@ -2,6 +2,7 @@ from spirogen import setup, Transform, Analyze, Colors, ColorScheme, Pattern, Po
 from functools import partial
 from tkinter import *
 from tkinter import ttk
+from tkinter.font import Font
 from copy import deepcopy
 
 
@@ -35,7 +36,8 @@ class Application(ttk.Notebook):
         drawspeed = 1000
         default_resolution = (1920, 1200)
         smaller_resolution = (1520, 800)
-        setup(drawspeed, speed, 'black', hide=True, resolution=default_resolution)
+        bgcolor = self.colorschemetab.backgroundcolor
+        setup(drawspeed, speed, bgcolor, hide=True, resolution=default_resolution)
 
     def run(self):
         try:
@@ -49,6 +51,8 @@ class Application(ttk.Notebook):
 class Tab(Frame):
     def __init__(self, master):
         super().__init__(master)
+        self.h1 = Font(family='TkDefaultFont', size=20, weight='bold')
+        self.h2 = ('TkDefaultFont', 20)
         self._rangewidth = 500
         self.pack(padx=50, pady=50)
         self._rangewidth = 500
@@ -392,18 +396,29 @@ class ColorSchemeTab(Tab):
             'g': [0, 150, 255, 255, 255, 255, 145, 3, 3, 3, 0],
             'b': [0, 0, 0, 3, 3, 240, 255, 255, 255, 255, 0]
         }
+        # self.backgroundcolor = self.rgb_tk((0, 0, 0))
         self.resetcolors = True
         self._colordict = deepcopy(self.default)
 
-        self.totalcolors = Parameter(self, label="Total Colors (fade smoothness)", from_=1, to=300, command=self.check_ratio_tot, row=5)
+        self.bg_red = StringVar()
+        self.bg_green = StringVar()
+        self.bg_blue = StringVar()
+        self.bg_color_example = None
+
+        self.setup_background_color_area()
+
+        patternlabel = Label(self, text="Pattern:", font=self.h1)
+        patternlabel.grid(row=6, column=3, columnspan=300, pady=(10, 5), sticky="nw")
+
+        self.totalcolors = Parameter(self, label="Total Colors (fade smoothness)", from_=1, to=300, command=self.check_ratio_tot, row=9)
         self.totalcolors.set(100)
         self.colorstops = Parameter(self, label="Number of Stops", from_=1, to=11, command=self.update_colorstops, row=10)
         self.colorstops.set(5)
 
-        self.settodefaultcolors = Button(self, text='Load Default Colors', command=self.reset_colors_to_default)
-        self.settodefaultcolors.grid(row=18, column=3, columnspan=300)
-        self.reversecolors = Button(self, text='Reverse Order', command=self.reverse_color_order)
-        self.reversecolors.grid(row=18, column=500, columnspan=300)
+        settodefaultcolors = Button(self, text='Load Default Colors', command=self.reset_colors_to_default)
+        settodefaultcolors.grid(row=18, column=3, columnspan=300)
+        reversecolors = Button(self, text='Reverse Order', command=self.reverse_color_order)
+        reversecolors.grid(row=18, column=500, columnspan=300)
 
         self.spacedarea.grid(row=20, column=0, columnspan=800)
 
@@ -430,6 +445,10 @@ class ColorSchemeTab(Tab):
         return colors
 
     @property
+    def backgroundcolor(self):
+        return self.make_bg_color()
+
+    @property
     def colordict(self):
         return self._colordict
 
@@ -437,6 +456,51 @@ class ColorSchemeTab(Tab):
     def colordict(self, val):
         self._colordict = val
         # self.update_color_boxes()
+
+    def setup_background_color_area(self):
+
+        self.bg_red.trace('w', self.make_bg_color)
+        self.bg_green.trace('w', self.make_bg_color)
+        self.bg_blue.trace('w', self.make_bg_color)
+
+        self.bg_color_example = Frame(self, width=20, height=15, highlightbackgroun='black', highlightthickness=1)
+
+        self.bg_red.set(0)
+        self.bg_green.set(0)
+        self.bg_blue.set(0)
+
+        backgroundlabel = Label(self, text="Background:", font=self.h1)
+        backgroundlabel.grid(row=2, column=3, columnspan=300, pady=(10, 5), sticky="nw")
+
+        rlabel = Label(self, text='R:')
+        glabel = Label(self, text='G:')
+        blabel = Label(self, text='B:')
+        rbox = Entry(self, textvariable=self.bg_red, width=5)
+        gbox = Entry(self, textvariable=self.bg_green, width=5)
+        bbox = Entry(self, textvariable=self.bg_blue, width=5)
+
+        rlabel.grid(row=3, column=80, columnspan=60)
+        rbox.grid(row=4, column=80, columnspan=60)
+        glabel.grid(row=3, column=150, columnspan=60)
+        gbox.grid(row=4, column=150, columnspan=60)
+        blabel.grid(row=3, column=220, columnspan=60)
+        bbox.grid(row=4, column=220, columnspan=60)
+        self.bg_color_example.grid(row=4, column=300)
+
+    def make_bg_color(self, *args):
+        rstr = self.bg_red.get()
+        gstr = self.bg_green.get()
+        bstr = self.bg_blue.get()
+        if all(filter(lambda x: x == '', [rstr, gstr, bstr])):
+            try:
+                r = round(float(rstr))
+                g = round(float(gstr))
+                b = round(float(bstr))
+                color = self.rgb_tk((self.bg_red.get(), self.bg_green.get(), self.bg_blue.get()))
+                self.bg_color_example.configure(bg=color)
+                return self.rgb_tk((r, g, b))
+            except ValueError:
+                print('Color values must be numbers between 0 and 255')
 
     def reset_colors_to_default(self):
         self.resetcolors = True
@@ -515,7 +579,8 @@ class ColorSchemeTab(Tab):
         if stops > self.totalcolors.get():
             self.totalcolors.set(stops)
 
-    def rgb_tk(self, rgb):
+    @staticmethod
+    def rgb_tk(rgb):
         rgb = tuple([round(float(i)) for i in rgb])
         output = "#%02x%02x%02x" % rgb
         # print(output)
@@ -576,7 +641,7 @@ class ColorSchemeTab(Tab):
             blue.set(self.colordict['b'][i])
 
             color = self.rgb_tk((red.get(), green.get(), blue.get()))
-            examplebox = Frame(self.spacedarea, width=20, height=15, bg=color)
+            examplebox = Frame(self.spacedarea, width=20, height=15, bg=color)  # , highlightbackgroun='black', highlightthickness=1)
 
             col = 20 * (i + 1)  # just so that I have flexibility in positioning things later if I make changes
             col_label.grid(row=8, column=col, pady=10, padx=1)
@@ -651,6 +716,11 @@ class ColorSchemeTab(Tab):
         scheme.ramplightness(amount, direction, goto)
         self.colordict = scheme.colors
         self.update_color_boxes()
+
+class ColorValueError(Exception):
+    # def __init__(self, message):
+        pass
+        # super().__init__(message)
 
 
 def main():
