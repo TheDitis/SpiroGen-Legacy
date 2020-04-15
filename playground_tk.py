@@ -52,7 +52,7 @@ class Tab(Frame):
     def __init__(self, master):
         super().__init__(master)
         self.h1 = Font(family='TkDefaultFont', size=20, weight='bold')
-        self.h2 = ('TkDefaultFont', 20)
+        self.h2 = Font(family='TkDefaultFont', size=15, weight='bold')
         self._rangewidth = 500
         self.pack(padx=50, pady=50)
         self._rangewidth = 500
@@ -99,9 +99,8 @@ class PatternTab(Tab):
         self.parameters = {}
 
         super().__init__(master)
-
         # Setting dropdown menu for selecting pattern type
-        patterns = ['layeredflowers', 'radialangular', 'sinespiral']
+        patterns = ['layeredflowers', 'radialangular', 'sinespiral', 'spirals']
         self.patternselection = StringVar(self)
         self.patternselection.trace('w', self.setpattern)
         self.patternselection.set(patterns[0])  # TODO: Set Startup pattern type here
@@ -119,6 +118,8 @@ class PatternTab(Tab):
             self.set_radial_angular()
         elif patterntype == 'sinespiral':
             self.set_sin_spiral()
+        elif patterntype == 'spirals':
+            self.set_spirals()
 
     def set_layered_flowers(self):
         # self.patterntype = "layeredflowers"
@@ -136,9 +137,6 @@ class PatternTab(Tab):
         self.parameters = {'layers': layers, "npetals": npetals, "innerdepth": innerdepth, "rotate": angle1, "sizefactor": size, "pensize": pensize}
 
     def set_radial_angular(self):
-        # self.patterntype = "radialangular"
-        # for p in self.parameters.values():
-        #     p.grid_forget()
         self.clear()
 
         size = Parameter(self, label="Size", from_=10, to=1000, row=3)
@@ -231,7 +229,6 @@ class PatternTab(Tab):
 
         for i in range(len(angles)):
             angle = angles[i]
-            # print('angle', angle)
             for j in range(len(angle)):
                 val = angle[j]
                 try:
@@ -240,12 +237,11 @@ class PatternTab(Tab):
                     angles[i][j] = len(val)
                     print("angle values should be numerical. Using length of input as angle")
         self.parameters['angles'] = [i for i in angles if i[0] != 0]
-        print(self.parameters['angles'])
 
     def set_sin_spiral(self):
         self.clear()
 
-        pady = 5
+        pady = 3
 
         n_strands = Parameter(self, label="Number of Waves", from_=1, to=300, row=10, pady=pady)
         length = Parameter(self, label="Length", from_=0, to=50, row=12, pady=pady)
@@ -256,8 +252,14 @@ class PatternTab(Tab):
         wavelen = Parameter(self, label="Wavelength", from_=0, to=500, row=30, pady=pady)
         wl_shift = Parameter(self, label="Wavelength Shift", from_=0, to=10, row=34, pady=pady)
         amp = Parameter(self, label="Ampitude", from_=0, to=500, row=38, pady=pady)
-        amp_shift = Parameter(self, label="Amplitude Shift", from_=0, to=100, row=42, pady=pady)
+        amp_shift = Parameter(self, label="Amplitude Shift", from_=0, to=20, row=42, pady=pady)
         pensize = Parameter(self, label="Pen Size", from_=1, to=40, row=46, pady=pady)
+        cosine = BooleanVar()
+        sinebtn = Radiobutton(self, text='Sine', width=5, indicatoron=False, value=False, variable=cosine)
+        cosinebtn = Radiobutton(self, text='Cosine', width=5, indicatoron=False, value=True, variable=cosine)
+
+        sinebtn.grid(row=50, column=50, columnspan=100, pady=20)
+        cosinebtn.grid(row=50, column=180, columnspan=100)
 
         n_strands.set(100)
         length.set(30)
@@ -266,12 +268,39 @@ class PatternTab(Tab):
         wavelen.set(50)
         amp.set(100)
 
+        self.progparams['cosinebuttons'] = [sinebtn, cosinebtn]
+
         self.parameters = {'strands': n_strands, 'xshift': x_shift,
                            'yshift': y_shift, "rotate": rotation,
                            'rotaterate': rotaterate,
                            'wavelength': wavelen, 'amplitude': amp,
                            'wlshift': wl_shift, 'ampshift':amp_shift,
-                           'length': length, 'pensize': pensize}
+                           'length': length, 'pensize': pensize,
+                           'cosine': cosine}
+
+    def set_spirals(self):
+        self.clear()
+
+        reps = Parameter(self, label="Number of Spirals", from_=1, to=600, row=10)
+        rotation = Parameter(self, label="Rotation", from_=-180, to=180, row=20, resolution=0.1, bigincrement=0.1)
+        curve = Parameter(self, label="Curve Amount", from_=1, to=50, row=22)
+        diameter = Parameter(self, label="Diameter", from_=1, to=30, row=25)
+        scale = Parameter(self, label="Scale", from_=5, to=50, row=27)
+        poly = Parameter(self, label="Poly", from_=2, to=400, row=30)
+        centerdist = Parameter(self, label="Distance from Center", from_=0, to=50, row=32)
+
+        reps.set(60)
+        rotation.set(5)
+        curve.set(10)
+        diameter.set(10)
+        scale.set(20)
+        poly.set(400)
+        centerdist.set(0)
+
+        self.parameters = {'reps': reps, 'rotation': rotation,
+                           'curve': curve, 'diameter': diameter,
+                           'scale': scale, 'poly': poly,
+                           'centerdist': centerdist}
 
     def clear(self):
         for p in self.parameters.values():
@@ -281,6 +310,13 @@ class PatternTab(Tab):
         for item in self.progparams.values():
             if isinstance(item, Widget):
                 item.grid_forget()
+            elif isinstance(item, list):
+                for i in item:
+                    if isinstance(i, Widget):
+                        i.grid_forget()
+                    else:
+                        for j in i:
+                            j.grid_forget()
 
     def run(self, colorscheme):
         # bye()
@@ -301,6 +337,8 @@ class PatternTab(Tab):
         elif self.patternselection.get() == 'sinespiral':
             pensize = parameters.pop('pensize')
             DrawPath(LVL2.sin_spiral(**parameters), colors=colorscheme, pensize=pensize)
+        elif self.patternselection.get() == 'spirals':
+            LVL2.spiral_spiral(**parameters, colors=colorscheme)
         wait()
 
 
@@ -390,7 +428,6 @@ class RampLightnessDialog(Frame):
 class ColorSchemeTab(Tab):
     def __init__(self, master):
         super().__init__(master)
-        self.debug = False
         self.default = {
             'r': [255, 255, 255, 220, 75, 3, 3, 30, 125, 220, 255],
             'g': [0, 150, 255, 255, 255, 255, 145, 3, 3, 3, 0],
@@ -404,6 +441,9 @@ class ColorSchemeTab(Tab):
         self.bg_green = StringVar()
         self.bg_blue = StringVar()
         self.bg_color_example = None
+
+        backgroundlabel = Label(self, text="Background:", font=self.h1)
+        backgroundlabel.grid(row=2, column=3, columnspan=300, pady=(10, 5), sticky="nw")
 
         self.setup_background_color_area()
 
@@ -425,11 +465,14 @@ class ColorSchemeTab(Tab):
         self.colorshift = Parameter(self, label="Shift Position", from_=-6, to=6, row=25, command=self.shift_color, bigincrement=1)
         self.previousshift = 0
 
+        effectslabel = Label(self, text="Effects:", font=self.h2)
+        effectslabel.grid(row=28, column=3,columnspan=200, pady=(10, 5), padx=(10, 0))
+
         shiftlightnessbutton = Button(self, text="Shift Lightness", command=lambda: ShiftLightnessDialog(self.shift_lightness))
         ramplightnessbutton = Button(self, text="Ramp Lightness", command=self.open_ramp_lightness_dialog)
 
-        shiftlightnessbutton.grid(row=30, column=3, columnspan=300)
-        ramplightnessbutton.grid(row=38, column=3, columnspan=300)
+        shiftlightnessbutton.grid(row=30, column=3, columnspan=200, pady=10, padx=(5, 0))
+        ramplightnessbutton.grid(row=30, column=210, columnspan=200)
 
 
     @property
@@ -469,9 +512,6 @@ class ColorSchemeTab(Tab):
         self.bg_green.set(0)
         self.bg_blue.set(0)
 
-        backgroundlabel = Label(self, text="Background:", font=self.h1)
-        backgroundlabel.grid(row=2, column=3, columnspan=300, pady=(10, 5), sticky="nw")
-
         rlabel = Label(self, text='R:')
         glabel = Label(self, text='G:')
         blabel = Label(self, text='B:')
@@ -504,10 +544,8 @@ class ColorSchemeTab(Tab):
 
     def reset_colors_to_default(self):
         self.resetcolors = True
-        print('pre:', self.colordict)
         self.colordict = deepcopy(self.default)
         self.colordict = deepcopy(self.default)
-        print('post:', self.colordict)
         self.colorshift.set(0)
         self.update_color_boxes()
 
@@ -520,20 +558,16 @@ class ColorSchemeTab(Tab):
         amt = self.colorshift.get()
         prev = self.previousshift
         self.previousshift = amt
-        # print('\nshifting color')
-        # print('prev:', prev, '\namt:', amt)
         if amt < prev:
             interval = -1
         else:
             interval = 1
         if amt == 0:
             amt = 1
-        # print('interval', interval)
         for j in range(abs(amt)):
             for color in colordict:
                 for i in range(len(colordict[color])):
                     ind = (i - interval) % len(colordict[color])
-                    # print('i', i, 'ind', ind)
                     colordict[color][i] = self.colordict[color][ind]
         self.colordict = colordict
         self.update_color_boxes()
@@ -560,13 +594,6 @@ class ColorSchemeTab(Tab):
         r_match = all(map(lambda x: r.count(x) == def_r.count(x), r))
         g_match = all(map(lambda x: g.count(x) == def_g.count(x), g))
         b_match = all(map(lambda x: b.count(x) == def_b.count(x), b))
-
-        if self.debug:
-            print("is_default_colors:")
-            print('r\n', def_r, '\n', r, '\n', r_match, '\n')
-            print('g\n', def_g, '\n', g, '\n', g_match, '\n')
-            print('b\n', def_b, '\n', b, '\n', b_match, '\n')
-
         return all([r_match, g_match, b_match])
 
     def check_ratio_tot(self, tot):
@@ -583,7 +610,6 @@ class ColorSchemeTab(Tab):
     def rgb_tk(rgb):
         rgb = tuple([round(float(i)) for i in rgb])
         output = "#%02x%02x%02x" % rgb
-        # print(output)
         return output
 
     def make_color_boxes(self):
@@ -661,8 +687,6 @@ class ColorSchemeTab(Tab):
             # self.progparams['curveboxes'].append([curvebox, label2])
 
     def update_color_dict(self, *args, index, key):
-        # pass
-        # print(key, index)
         colparams = self.progparams['colorparams']
         values = [i['vals'] for i in colparams]
         examples = [i['example'] for i in colparams]
@@ -673,7 +697,6 @@ class ColorSchemeTab(Tab):
             for key in group:  # for 'r', 'g', and 'b':
                 shift = self.colorshift.get()  # get the value of the shift parameter
                 ind = (i - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
-                # print(ind)
                 strval = group[key].get()
                 if strval != '':
                     val = round(float(strval))
@@ -682,13 +705,7 @@ class ColorSchemeTab(Tab):
                     rgb.append(val)
             if len(rgb) == 3:
                 examples[i].configure(bg=self.rgb_tk(rgb))
-        # for k in self.colordict:
-        #     print(k, self.colordict[k])
-        # print('\n')
-        # print('static', self.colordict)
-        # print('coldict', newcols)
         self.colordict = newcols
-        # self.update_color_boxes()
 
     def update_color_boxes(self):
         self.make_color_boxes()

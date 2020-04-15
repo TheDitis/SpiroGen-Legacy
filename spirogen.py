@@ -1,6 +1,7 @@
 import turtle
 import numpy as np
 from matplotlib.colors import rgb2hex as pltcolors
+from scipy.spatial import distance
 from math import *
 
 default_color_list = [
@@ -753,7 +754,7 @@ class Wave(Pattern):
         if length < 0:
             self.xlist = np.linspace(length, abs(length) + (1 / (abs(length) * 25)), abs(length) * 25)
         else:
-            self.xlist = np.linspace(-length, length + (1 / (length * 25)), length * 25)
+            self.xlist = np.linspace(-length, round(length + (1 / (length * 25))), round(length * 25))
         if cosin is False:
             self.ylist = [sin(x) for x in self.xlist]
         else:
@@ -788,8 +789,8 @@ class Wave(Pattern):
 
 
 class Rectangle(Pattern):
-    def __init__(self, width=50, height=50, pensize=1, position=(0, 0), length=25,
-                 color='yellow', cosin=False):
+    def __init__(self, width=50, height=50, pensize=1, position=(0, 0),
+                 color='yellow'):
         if isinstance(color, list):
             color = color[0]
             print('Only 1 color can be used. Using first in list')
@@ -801,12 +802,8 @@ class Rectangle(Pattern):
         botr = (xpos + (width / 2), ypos - (height / 2))
         self.plist = [topl, topr, botr, botl, topl]
         super().__init__(self.plist, color, pensize, position)
-        # self._talllist = Transform(self.plist).yscale(height)
         self.list = Transform(self.plist).xscale(width / 2)
         self.list = Transform(self.list).yscale(height / 2)
-        # if position != (0, 0):
-        #     self.list = Transform(self.list).xshift(position[0])
-        #     self.list = Transform(self.list).yshift(position[1])
 
     def draw(self):
         lst = self.list
@@ -830,8 +827,8 @@ class Rectangle(Pattern):
 
 
 class Circle(Pattern):
-    def __init__(self, width=50, height=50, pensize=1, position=(0, 0), length=25,
-                 color='yellow', cosin=False):
+    def __init__(self, width=50, height=50, pensize=1, position=(0, 0),
+                 color='yellow'):
         if isinstance(color, list):
             color = color[0]
             print('Only 1 color can be used. Using first in list')
@@ -842,11 +839,6 @@ class Circle(Pattern):
         super().__init__(self.plist, color, pensize, position)
         self.list = Transform(self.plist).xscale(width / 2)
         self.list = Transform(self.list).yscale(height / 2)
-        # self.draw()
-        # center = Analyze(self.list).center(show=True)
-        # if position != (0, 0):
-        #     self.list = Transform(self.list).xshift(position[0])
-        #     self.list = Transform(self.list).yshift(position[1])
 
     def draw(self):
         lst = self.list
@@ -1076,11 +1068,11 @@ class FlowerPattern(PolarPattern):
 
 
 class SpiralPattern(PolarPattern):
-    def __init__(self, linedist=1, diameter=100, scale=20, poly=400,
+    def __init__(self, linelength=1, diameter=100, scale=20, poly=400,
                  centerdist=0, color='orange', position=[0, 0], pensize=1,
                  xscale=1, yscale=1):
-        linedist = linedist / 10
-        self._tightness = linedist
+        linelength = linelength / 10
+        self._tightness = linelength
         self._size = diameter
         angldiv = (diameter * poly)
         self._pensize = pensize
@@ -1091,7 +1083,7 @@ class SpiralPattern(PolarPattern):
             print('Only 1 color can be used. Using first in list')
         turtle.color(color)
         radianlist = np.linspace(0, diameter, angldiv // 6)
-        radiuslist = [(angl * linedist) + centerdist for angl in radianlist]
+        radiuslist = [(angl * linelength) + centerdist for angl in radianlist]
         super().__init__(radianlist, radiuslist, scale, position, pensize, xscale, yscale)
 
 
@@ -1311,7 +1303,7 @@ class TimesTable:
         turtle.end_poly()
         lst = [tuple(i) for i in turtle.get_poly()]
         biglist.append(lst)
-        print('list: ', biglist, 'len: ', len(lst))
+        # print('list: ', biglist, 'len: ', len(lst))
         return biglist
 
     def draw_circle(self):
@@ -1342,7 +1334,6 @@ class CascadeLines(Pattern):
         self._startpos = position
         self._rotation = rotation
         self.paths = self.draw()
-        # print('paths:', self.paths)
         super().__init__(self.paths)
 
     def draw(self):
@@ -1455,7 +1446,6 @@ class LVL2:
             wavelength2 += wlshift
             amplitude2 += ampshift
             length2 += lenshift
-            # print(funclist)
             funclist.append(sin1.list)
             if draworig is True:
                 sin1.draw()
@@ -1630,13 +1620,13 @@ class LVL2:
             return funclist2
 
     @staticmethod
-    def spiral_spiral(reps=30, rotation=5, linedist=10, diameter=10, scale=20,
+    def spiral_spiral(reps=30, rotation=5, curve=10, diameter=10, scale=20,
                       poly=400, centerdist=0, colors=default_color_list):
         rotate = 0
         for i in range(reps):
             colind = i % len(colors)
             col = colors[colind]
-            spiral = SpiralPattern(linedist=linedist, diameter=diameter,
+            spiral = SpiralPattern(linelength=curve, diameter=diameter,
                                    scale=scale, poly=poly,
                                    centerdist=centerdist, color=col)
             Transform(spiral).rotate(rotate)
