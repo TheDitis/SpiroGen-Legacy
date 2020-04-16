@@ -19,6 +19,7 @@ class PatternTab(Tab):
         dropdownlabel = Label(self, text="Select a Pattern")
         dropdownlabel.grid(row=0, column=400, pady=(20, 0))
         self.patternmenu.grid(row=1, column=400)
+        self.n_angles = None
 
     def setpattern(self, *args):
         # self.runbutton['command'] = func
@@ -53,7 +54,7 @@ class PatternTab(Tab):
         size = Parameter(self, label="Size", from_=10, to=1000, row=3)
         size.set(500)
 
-        n_angles = IntVar(self)
+        self.n_angles = IntVar(self)
 
         self.spacedarea.grid(row=6, column=0, columnspan=800)
 
@@ -61,19 +62,19 @@ class PatternTab(Tab):
         # self.anglearea.grid_columnconfigure(weight=1)
 
         self.parameters = {"size": size, 'pensize': pensize}  # for the parameters that feed into the pattern function
-        self.progparams = {'n_angles': n_angles}  # for the parameters that help create function parameters, but dont feed in directly
+        self.progparams = {'n_angles': self.n_angles}  # for the parameters that help create function parameters, but dont feed in directly
 
         options = [1, 2, 3, 4]  # number of possible angles
-        n_angles.trace('w', self.make_angle_boxes)
-        n_angles.set(options[0])
+        self.n_angles.trace('w', self.make_angle_boxes)
+        self.n_angles.set(options[0])
 
-        n_angles_menu = OptionMenu(self, n_angles, *options)
+        self.n_angles_menu = OptionMenu(self, self.n_angles, *options)
         dropdownlabel = Label(self, text="Number of Angles:")
         dropdownlabel.grid(row=4, column=400, pady=(10, 0))
-        n_angles_menu.grid(row=5, column=400)
+        self.n_angles_menu.grid(row=5, column=400)
 
-        self.progparams['n_angles'] = n_angles
-        self.progparams['n_angles_menu'] = n_angles_menu
+        self.progparams['n_angles'] = self.n_angles
+        self.progparams['n_angles_menu'] = self.n_angles_menu
         self.progparams['n_angle_label'] = dropdownlabel
 
     def make_angle_boxes(self, *args):
@@ -95,6 +96,7 @@ class PatternTab(Tab):
             self.parameters['turncycle'].grid_forget()
         if 'jank' in self.parameters.keys():
             self.parameters['jank'].grid_forget()
+        self.progparams['anglevariables'] = []
 
         for i in range(n):
             anglevar = StringVar()
@@ -131,6 +133,9 @@ class PatternTab(Tab):
             curvebox.grid(row=14, column=col)
             self.progparams['angleparams'].append(
                 [anglebox, label1, curvebox, label2]
+            )
+            self.progparams['anglevariables'].append(
+                [anglevar, curvevar]
             )
             # self.progparams['curveboxes'].append([curvebox, label2])
 
@@ -230,16 +235,42 @@ class PatternTab(Tab):
                             j.grid_forget()
 
     def save(self):
-        params = {k: v.get() for k, v in self.parameters.items()}
+        # print(params)
+        # params = {k: v.get() for k, v in self.parameters.items()}
+        params = {}
+        for k, v in self.parameters.items():
+            if isinstance(v, Widget):
+                params[k] = v.get()
+            else:
+                params[k] = v
         output = {'patterntype': self.patternselection.get(),
                   'parameters': params}
+        # if self.patternselection.get() == 'radialangular':
+        #     print('progparams:', self.progparams)
+        #     output['progparams'] = self.progparams
+        #     print('here')
+        #     print(output)
         return output
 
     def load(self, data):
         self.patternselection.set(data['patterntype'])
-        values = data['parameters']
-        for k in values:
-            self.parameters[k].set(values[k])
+        params = data['parameters']
+        # print(data['patterntype'])
+        if data['patterntype'] == 'radialangular':
+            # progparams = data['progparams']
+            angles = data['parameters']['angles']
+            self.n_angles.set(len(params['angles']))
+            angleparams = self.progparams['anglevariables']
+            for i in range(len(angleparams)):
+                boxes = angleparams[i]
+                anglebox, curvebox = boxes[0], boxes[1]
+                anglebox.set(angles[i][0])
+                curvebox.set(angles[i][1])
+        for k in params:
+            if k in self.parameters:
+                self.parameters[k].set(params[k])
+            else:
+                self.parameters[k] = params[k]
 
     def run(self, colorscheme):
         # bye()
