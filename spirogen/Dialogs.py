@@ -1,4 +1,5 @@
-from tkinter import Frame, Toplevel, StringVar, Label, Entry, Button, IntVar, Radiobutton
+from tkinter import Frame, Toplevel, StringVar, Label, Entry, Button, IntVar, Radiobutton, Listbox
+import os
 
 
 class ShiftLightnessDialog(Frame):
@@ -122,12 +123,19 @@ class LoadDialog(Frame):
         session = Radiobutton(self, text="Session", width=8, indicatoron=False, value="sessions", variable=mode)
         pattern = Radiobutton(self, text="Pattern", width=8, indicatoron=False, value='patterns', variable=mode)
         colors = Radiobutton(self, text="Colors", width=8, indicatoron=False, value='colors', variable=mode)
+        self.pick = None
 
-        name = StringVar()
+        self.name = StringVar()
         namelabel = Label(self, text="Name:")
-        namebox = Entry(self, textvariable=name)
+        namebox = Entry(self, textvariable=self.name)
 
-        loadbtn = Button(self, text="Load", command=lambda: func(mode.get(), name.get()))
+        listbtn = Button(
+            self,
+            text="List Available",
+            command=lambda: self.list_dialog(mode)
+        )
+
+        loadbtn = Button(self, text="Load", command=lambda: func(mode.get(), self.name.get()))
 
         session.grid(row=10, column=9, columnspan=100)
         pattern.grid(row=10, column=120, columnspan=100, padx=20)
@@ -135,4 +143,33 @@ class LoadDialog(Frame):
 
         namelabel.grid(row=13, column=37, columnspan=100, pady=(20, 0))
         namebox.grid(row=15, column=10, columnspan=300, pady=(0, 20))
+        listbtn.grid(row=20, column=9, columnspan=50, sticky='sw')
         loadbtn.grid(row=20, column=250, columnspan=50, sticky='se')
+
+    def list_dialog(self, mode):
+        self.choosedlg = ListAvailableDialog(self.name, mode.get())
+
+
+class ListAvailableDialog(Frame):
+    def __init__(self, var, type='sessions'):
+        super().__init__(Toplevel())
+        self.var = var
+        self.master.title(f"Loadable {type.capitalize()[:-1]} Names")
+        # self.master.geometry("300x400")
+        self.pack(padx=30, pady=30)
+
+        files = os.listdir(f'./SpiroGenSettings/{type}')
+        lbox = Listbox(self)
+        for i, file in enumerate(files):
+            lbox.insert(i, file.replace('.json', ''))
+        # self.list.grid(row=10, column=10, columnspan=90)
+        lbox.pack(fill="both")
+        lbox.bind('<<ListboxSelect>>', self.get_value)
+
+
+    def get_value(self, event):
+        w = event.widget
+        ind = int(w.curselection()[0])
+        self.var.set(w.get(ind))
+
+
