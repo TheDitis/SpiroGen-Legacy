@@ -1,0 +1,15 @@
+{
+  "patterntype": "sinespiral",
+  "parameters": {
+    "strands": 175,
+    "xshift": 1,
+    "yshift": 0,
+    "rotate": 1,
+    "rotaterate": 0.3,
+    "wavelength": 50,
+    "amplitude": 100,
+    "wlshift": 0,
+    "ampshift": 0,
+    "length": 30,
+    "pensize": 1,
+    "cosine": 

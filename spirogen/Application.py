@@ -32,6 +32,8 @@ class Application(ttk.Notebook):
 
         button_area.pack(side="bottom", fill='x')
 
+        self.check_for_slash_create_save_directories()
+
     def setup_drawing(self):
         spiro.reset()
         speed = 10
@@ -47,27 +49,33 @@ class Application(ttk.Notebook):
     def open_load_dialog(self):
         LoadDialog(self.load)
 
+    def check_for_slash_create_save_directories(self):
+        paths = ['./SpiroGenSettings', './SpiroGenSettings/sessions', './SpiroGenSettings/colors', './SpiroGenSettings/patterns']
+        for path in paths:
+            if not os.path.exists(path):
+                os.mkdir(path)
+
     def save(self, mode, name):
         colors = self.colorschemetab.save()
         pattern = self.patterntab.save()
         current = {'colors': colors, 'patterns': pattern}
-        files = os.listdir(f'./settings/{mode}')
+        files = os.listdir(f'./SpiroGenSettings/{mode}')
         files = [f.replace('.json', '') for f in files]
         if name not in files:
             if mode != 'sessions':
-                path = f'./settings/{mode}/{name}.json'
+                path = f'./SpiroGenSettings/{mode}/{name}.json'
                 with open(path, 'w') as file:
                     json.dump(current[mode], file, indent=2)
             else:
                 col_id = str(random.randint(100000, 199999))
                 pat_id = str(random.randint(100000, 199999))
                 session = {'colors': col_id, 'patterns': pat_id}
-                sessionpath = f"./settings/sessions/{name}.json"
+                sessionpath = f"./SpiroGenSettings/sessions/{name}.json"
                 # TODO: Add checking for id already existing
                 with open(sessionpath, 'w') as file:
                     json.dump(session, file, indent=2)
                 for key in session:
-                    path = f'./settings/{key}/{session[key]}.json'
+                    path = f'./SpiroGenSettings/{key}/{session[key]}.json'
                     with open(path, 'w') as file:
                         json.dump(current[key], file, indent=2)
         else:
@@ -76,10 +84,10 @@ class Application(ttk.Notebook):
     def load(self, mode, name):
         name = name.lower()
         destinations = {'colors': self.colorschemetab, 'patterns': self.patterntab}
-        existing = os.listdir(f"./settings/{mode}")
+        existing = os.listdir(f"./SpiroGenSettings/{mode}")
         existing = [f.replace('.json', '') for f in existing]
         if name in existing:
-            path = f"./settings/{mode}/{name}.json"
+            path = f"./SpiroGenSettings/{mode}/{name}.json"
             if mode != 'sessions':
                 with open(path, 'r') as file:
                     data = json.load(file)
@@ -88,9 +96,12 @@ class Application(ttk.Notebook):
                 with open(path, 'r') as file:
                     ids = json.load(file)
                 for k in ids:
-                    path = f"./settings/{k}/{ids[k]}.json"
+                    path = f"./SpiroGenSettings/{k}/{ids[k]}.json"
                     with open(path, 'r') as file:
-                        data = json.load(file)
+                        try:
+                            data = json.load(file)
+                        except:
+                            print('PATH', path)
                     destinations[k].load(data)
         else:
             print('Name not found. Try another mode, or a different name.')

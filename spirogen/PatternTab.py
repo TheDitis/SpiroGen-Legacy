@@ -12,28 +12,28 @@ class PatternTab(Tab):
         super().__init__(master)
         # Setting dropdown menu for selecting pattern type
         patterns = ['layeredflowers', 'radialangular', 'sinespiral', 'spirals']
-        self.patternselection = StringVar(self)
-        self.patternselection.trace('w', self.setpattern)
-        self.patternselection.set(patterns[0])  # TODO: Set Startup pattern type here
-        self.patternmenu = OptionMenu(self, self.patternselection, *patterns)
+        self._patternselection = StringVar(self)
+        self._patternselection.trace('w', self._setpattern)
+        self._patternselection.set(patterns[0])  # TODO: Set Startup pattern type here
+        self._patternmenu = OptionMenu(self, self._patternselection, *patterns)
         dropdownlabel = Label(self, text="Select a Pattern")
         dropdownlabel.grid(row=0, column=400, pady=(20, 0))
-        self.patternmenu.grid(row=1, column=400)
-        self.n_angles = None
+        self._patternmenu.grid(row=1, column=400)
+        self._n_angles = None
 
-    def setpattern(self, *args):
+    def _setpattern(self, *args):
         # self.runbutton['command'] = func
-        patterntype = self.patternselection.get()
+        patterntype = self._patternselection.get()
         if patterntype == 'layeredflowers':
-            self.set_layered_flowers()
+            self._set_layered_flowers()
         elif patterntype == 'radialangular':
-            self.set_radial_angular()
+            self._set_radial_angular()
         elif patterntype == 'sinespiral':
             self.set_sin_spiral()
         elif patterntype == 'spirals':
             self.set_spirals()
 
-    def set_layered_flowers(self):
+    def _set_layered_flowers(self):
         # self.patterntype = "layeredflowers"
         self.clear()
         layers = Parameter(self, label="layers", from_=10, to=200, row=3)
@@ -48,13 +48,13 @@ class PatternTab(Tab):
 
         self.parameters = {'layers': layers, "npetals": npetals, "innerdepth": innerdepth, "rotate": angle1, "sizefactor": size, "pensize": pensize}
 
-    def set_radial_angular(self):
+    def _set_radial_angular(self):
         self.clear()
 
         size = Parameter(self, label="Size", from_=10, to=1000, row=3)
         size.set(500)
 
-        self.n_angles = IntVar(self)
+        self._n_angles = IntVar(self)
 
         self.spacedarea.grid(row=6, column=0, columnspan=800)
 
@@ -62,22 +62,22 @@ class PatternTab(Tab):
         # self.anglearea.grid_columnconfigure(weight=1)
 
         self.parameters = {"size": size, 'pensize': pensize}  # for the parameters that feed into the pattern function
-        self.progparams = {'n_angles': self.n_angles}  # for the parameters that help create function parameters, but dont feed in directly
+        self.progparams = {'n_angles': self._n_angles}  # for the parameters that help create function parameters, but dont feed in directly
 
         options = [1, 2, 3, 4]  # number of possible angles
-        self.n_angles.trace('w', self.make_angle_boxes)
-        self.n_angles.set(options[0])
+        self._n_angles.trace('w', self._make_angle_boxes)
+        self._n_angles.set(options[0])
 
-        self.n_angles_menu = OptionMenu(self, self.n_angles, *options)
+        self.n_angles_menu = OptionMenu(self, self._n_angles, *options)
         dropdownlabel = Label(self, text="Number of Angles:")
         dropdownlabel.grid(row=4, column=400, pady=(10, 0))
         self.n_angles_menu.grid(row=5, column=400)
 
-        self.progparams['n_angles'] = self.n_angles
+        self.progparams['n_angles'] = self._n_angles
         self.progparams['n_angles_menu'] = self.n_angles_menu
         self.progparams['n_angle_label'] = dropdownlabel
 
-    def make_angle_boxes(self, *args):
+    def _make_angle_boxes(self, *args):
         menu = self.progparams['n_angles']
         n = menu.get()
         prevparams = []
@@ -239,11 +239,11 @@ class PatternTab(Tab):
         # params = {k: v.get() for k, v in self.parameters.items()}
         params = {}
         for k, v in self.parameters.items():
-            if isinstance(v, Widget):
+            if isinstance(v, (Widget, BooleanVar, IntVar, StringVar)):
                 params[k] = v.get()
             else:
                 params[k] = v
-        output = {'patterntype': self.patternselection.get(),
+        output = {'patterntype': self._patternselection.get(),
                   'parameters': params}
         # if self.patternselection.get() == 'radialangular':
         #     print('progparams:', self.progparams)
@@ -253,13 +253,13 @@ class PatternTab(Tab):
         return output
 
     def load(self, data):
-        self.patternselection.set(data['patterntype'])
+        self._patternselection.set(data['patterntype'])
         params = data['parameters']
         # print(data['patterntype'])
         if data['patterntype'] == 'radialangular':
             # progparams = data['progparams']
             angles = data['parameters']['angles']
-            self.n_angles.set(len(params['angles']))
+            self._n_angles.set(len(params['angles']))
             angleparams = self.progparams['anglevariables']
             for i in range(len(angleparams)):
                 boxes = angleparams[i]
@@ -283,14 +283,14 @@ class PatternTab(Tab):
             else:
                 parameters[label] = value
 
-        if self.patternselection.get() == "layeredflowers":
+        if self._patternselection.get() == "layeredflowers":
             LVL2.layered_flowers(**parameters, colors=colorscheme)
-        elif self.patternselection.get() == "radialangular":
+        elif self._patternselection.get() == "radialangular":
             self.set_angles()
             RadialAngularPattern(**parameters, colors=colorscheme).drawpath()
-        elif self.patternselection.get() == 'sinespiral':
+        elif self._patternselection.get() == 'sinespiral':
             pensize = parameters.pop('pensize')
             DrawPath(LVL2.sin_spiral(**parameters), colors=colorscheme, pensize=pensize)
-        elif self.patternselection.get() == 'spirals':
+        elif self._patternselection.get() == 'spirals':
             LVL2.spiral_spiral(**parameters, colors=colorscheme)
         spiro.wait()
