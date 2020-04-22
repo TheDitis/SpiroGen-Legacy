@@ -6,13 +6,13 @@ class ShiftLightnessDialog(Frame):
     def __init__(self, func):
         super().__init__(Toplevel())
         self.master.title('Shift Lightness')
-        self.func = func
+        self._func = func
         self.pack(padx=20, pady=20)
 
-        self.amount = StringVar()
-        self.amount.set(0)
+        self._amount = StringVar()
+        self._amount.set(0)
         amtlabel = Label(self, text="Amount:")
-        amtbox = Entry(self, width=5, textvariable=self.amount)
+        amtbox = Entry(self, width=5, textvariable=self._amount)
         applybtn = Button(self, text="Apply", command=self.apply)
 
         amtlabel.grid(row=38, column=3, columnspan=120, pady=10)
@@ -21,9 +21,9 @@ class ShiftLightnessDialog(Frame):
 
     def apply(self):
         try:
-            amt = round(float(self.amount.get()))
+            amt = round(float(self._amount.get()))
             if abs(amt) <= 255:
-                self.func(amt)
+                self._func(amt)
                 self.master.destroy()
             else:
                 print("amount must be between -255 and 255.")
@@ -36,7 +36,7 @@ class RampLightnessDialog(Frame):
     def __init__(self, func):
         super().__init__(Toplevel())
         self.master.title('Ramp Lightness')
-        self.func = func
+        self._func = func
         # self.frame = Frame(self, width=800, height=200)
         self.pack(padx=20, pady=20)
 
@@ -45,22 +45,22 @@ class RampLightnessDialog(Frame):
         # for i in range(self.columns):
         #     self.grid_columnconfigure(i, minsize=1 / 8000, weight=1)
 
-        self.amount = StringVar()
-        self.direction = IntVar()
-        self.goto = StringVar()
+        self._amount = StringVar()
+        self._direction = IntVar()
+        self._goto = StringVar()
 
-        self.amount.set(-255)
-        self.direction.set(0)
-        self.goto.set(50)
+        self._amount.set(-255)
+        self._direction.set(0)
+        self._goto.set(50)
 
         # ramplightlabel = Label(self.rl_window, text='Ramp Lightness:')
         amtlabel = Label(self, text='Amount:')
-        amtbox = Entry(self, width=5, textvariable=self.amount)
+        amtbox = Entry(self, width=5, textvariable=self._amount)
         directionlabel = Label(self, text='Direction:')
-        leftbutton = Radiobutton(self, text='Left', width=8, indicatoron=False, value=0, variable=self.direction)
-        rightbutton = Radiobutton(self, text='Right', width=8, indicatoron=False, value=1, variable=self.direction)
+        leftbutton = Radiobutton(self, text='Left', width=8, indicatoron=False, value=0, variable=self._direction)
+        rightbutton = Radiobutton(self, text='Right', width=8, indicatoron=False, value=1, variable=self._direction)
         gotolabel = Label(self, text='Go To %:')
-        gotobox = Entry(self, width=5, textvariable=self.goto)
+        gotobox = Entry(self, width=5, textvariable=self._goto)
         applybtn = Button(self, text="Apply", command=self.apply)
 
         # ramplightlabel.grid(row=35, column=3, columnspan=180, pady=(20, 0))
@@ -75,10 +75,10 @@ class RampLightnessDialog(Frame):
 
     def apply(self):
         try:
-            amt = round(float(self.amount.get()))
-            direction = int(self.direction.get())
-            goto = round(float(self.goto.get()))
-            self.func(amt, direction, goto)
+            amt = round(float(self._amount.get()))
+            direction = int(self._direction.get())
+            goto = round(float(self._goto.get()))
+            self._func(amt, direction, goto)
             self.master.destroy()
         except ValueError as error:
             print("one of the parameters in non-numerical.")
@@ -123,19 +123,20 @@ class LoadDialog(Frame):
         session = Radiobutton(self, text="Session", width=8, indicatoron=False, value="sessions", variable=mode)
         pattern = Radiobutton(self, text="Pattern", width=8, indicatoron=False, value='patterns', variable=mode)
         colors = Radiobutton(self, text="Colors", width=8, indicatoron=False, value='colors', variable=mode)
-        self.pick = None
+        self._pick = None
 
-        self.name = StringVar()
+        self._name = StringVar()
         namelabel = Label(self, text="Name:")
-        namebox = Entry(self, textvariable=self.name)
+        namebox = Entry(self, textvariable=self._name)
 
         listbtn = Button(
             self,
             text="List Available",
             command=lambda: self.list_dialog(mode)
         )
+        self._choosedlg = None
 
-        loadbtn = Button(self, text="Load", command=lambda: func(mode.get(), self.name.get()))
+        loadbtn = Button(self, text="Load", command=lambda: func(mode.get(), self._name.get()))
 
         session.grid(row=10, column=9, columnspan=100)
         pattern.grid(row=10, column=120, columnspan=100, padx=20)
@@ -147,7 +148,7 @@ class LoadDialog(Frame):
         loadbtn.grid(row=20, column=250, columnspan=50, sticky='se')
 
     def list_dialog(self, mode):
-        self.choosedlg = ListAvailableDialog(self.name, mode.get())
+        self._choosedlg = ListAvailableDialog(self._name, mode.get())
 
 
 class ListAvailableDialog(Frame):
@@ -166,10 +167,7 @@ class ListAvailableDialog(Frame):
         lbox.pack(fill="both")
         lbox.bind('<<ListboxSelect>>', self.get_value)
 
-
     def get_value(self, event):
         w = event.widget
         ind = int(w.curselection()[0])
         self.var.set(w.get(ind))
-
-

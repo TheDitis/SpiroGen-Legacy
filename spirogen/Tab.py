@@ -10,19 +10,18 @@ class Tab(Frame):
         self._rangewidth = 500
         self.pack(padx=50, pady=50)
         self._rangewidth = 500
-        self.columns = 800
-        self.rows = 800
+        self._columns = 800
+        self._rows = 800
         self.bind("<Configure>", self.config)
 
-        self.spacedarea = Frame(self)
-        self.progparams = {}
-
+        self._spacedarea = Frame(self)
+        self._progparams = {}
 
     def config(self, event):
         w, h = event.width, event.height
-        for i in range(self.rows):
+        for i in range(self._rows):
             self.grid_rowconfigure(i, minsize=h/8000, weight=1)
-        for i in range(self.columns):
+        for i in range(self._columns):
             self.grid_columnconfigure(i, minsize=w/8000, weight=1)
 
     @property
