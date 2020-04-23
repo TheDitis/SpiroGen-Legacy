@@ -1,9 +1,9 @@
 from tkinter import StringVar, Label, Button, Entry, Frame
 from copy import deepcopy
-from Tab import Tab
-from Parameter import Parameter
-from spirogen_backend import ColorScheme
-from Dialogs import ShiftLightnessDialog, RampLightnessDialog
+from spirogen.interface.Tab import Tab
+from spirogen.interface.Parameter import Parameter
+from spirogen.spirogen import ColorScheme
+from spirogen.interface.Dialogs import ShiftLightnessDialog, RampLightnessDialog
 
 
 class ColorSchemeTab(Tab):

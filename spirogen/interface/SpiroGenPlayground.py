@@ -1,17 +1,28 @@
-from tkinter import Frame, Button, ttk
-import spirogen_backend as spiro
-from PatternTab import PatternTab
-from ColorSchemeTab import ColorSchemeTab
+"""
+File: Application.py
+Author: Ryan McKay
+Date: April 12, 2020
+
+Purpose: This is the Root of the SpiroGen application interface.
+Input: master window
+Output:
+    None
+"""
+from tkinter import Frame, Button, ttk, Tk
+from spirogen import spirogen as spiro
+from spirogen.interface.PatternTab import PatternTab
+from spirogen.interface.ColorSchemeTab import ColorSchemeTab
 import json
-from Dialogs import SaveDialog, LoadDialog
+from spirogen.interface.Dialogs import SaveDialog, LoadDialog
 import os
 import random
 
 
-class Application(ttk.Notebook):
-    def __init__(self, master):
-        super().__init__(master)
-
+class SpiroGenPlayground(ttk.Notebook):
+    def __init__(self):
+        super().__init__(Tk())
+        self.master.title('SiroGen')  # name the window
+        self.master.geometry("600x950")  # set default window size
         self._patterntab = PatternTab(self)
         # patterntab = ttk.Frame(tabcontrol)
         self.add(self._patterntab, text="Pattern")
@@ -33,6 +44,7 @@ class Application(ttk.Notebook):
         button_area.pack(side="bottom", fill='x')
 
         self.check_for_slash_create_save_directories()
+        self.mainloop()
 
     def setup_drawing(self):
         spiro.reset()

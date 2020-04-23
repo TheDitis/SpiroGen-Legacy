@@ -3,7 +3,7 @@ File: PatternTab.py
 Author: Ryan McKay
 Date: April 13, 2020
 
-Purpose: This a tkinter based tab for the spirogen interface that controls the
+Purpose: This a tkinter based tab for the spirogen_ interface that controls the
     pattern type and parameters.
 Input: master window
 Output:
@@ -12,10 +12,10 @@ Output:
 """
 from tkinter import StringVar, BooleanVar, IntVar, OptionMenu, Label, Entry, \
     Scale, Radiobutton, Widget
-from Tab import Tab
-from Parameter import Parameter
-import spirogen_backend as spiro
-from spirogen_backend import LVL2, RadialAngularPattern, DrawPath
+from spirogen.interface.Tab import Tab
+from spirogen.interface.Parameter import Parameter
+from spirogen import spirogen as spiro
+from spirogen.spirogen import LVL2, RadialAngularPattern, DrawPath
 
 
 class PatternTab(Tab):
