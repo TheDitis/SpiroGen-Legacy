@@ -1,4 +1,4 @@
-from spirogen import setup, Transform, Analyze, Colors, ColorScheme, Pattern, PolarPattern, Wave, Rectangle, Circle, RadialAngularPattern, FlowerPattern, SpiralPattern, FlowerPattern2, DrawPath, TimesTable, CascadeLines, LVL2, wait
+from spirogen.spirogen import setup, Colors, ColorScheme, LVL2, wait
 
 rainbow1 = Colors.rainbow(200)
 rainbow2 = Colors.rainbow(30)

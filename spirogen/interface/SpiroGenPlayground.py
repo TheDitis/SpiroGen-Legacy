@@ -1,22 +1,33 @@
-from tkinter import Frame, Button, ttk
-import spirogen as spiro
-from PatternTab import PatternTab
-from ColorSchemeTab import ColorSchemeTab
+"""
+File: Application.py
+Author: Ryan McKay
+Date: April 12, 2020
+
+Purpose: This is the Root of the SpiroGen application interface.
+Input: master window
+Output:
+    None
+"""
+from tkinter import Frame, Button, ttk, Tk
+from spirogen import spirogen as spiro
+from spirogen.interface.PatternTab import PatternTab
+from spirogen.interface.ColorSchemeTab import ColorSchemeTab
 import json
-from Dialogs import SaveDialog, LoadDialog
+from spirogen.interface.Dialogs import SaveDialog, LoadDialog
 import os
 import random
 
 
-class Application(ttk.Notebook):
-    def __init__(self, master):
-        super().__init__(master)
-
-        self.patterntab = PatternTab(self)
+class SpiroGenPlayground(ttk.Notebook):
+    def __init__(self):
+        super().__init__(Tk())
+        self.master.title('SiroGen')  # name the window
+        self.master.geometry("600x950")  # set default window size
+        self._patterntab = PatternTab(self)
         # patterntab = ttk.Frame(tabcontrol)
-        self.add(self.patterntab, text="Pattern")
-        self.colorschemetab = ColorSchemeTab(self)
-        self.add(self.colorschemetab, text="Color Scheme")
+        self.add(self._patterntab, text="Pattern")
+        self._colorschemetab = ColorSchemeTab(self)
+        self.add(self._colorschemetab, text="Color Scheme")
 
         self.pack(expan=1, padx=10, pady=10, fill='both')
 
@@ -33,6 +44,7 @@ class Application(ttk.Notebook):
         button_area.pack(side="bottom", fill='x')
 
         self.check_for_slash_create_save_directories()
+        self.mainloop()
 
     def setup_drawing(self):
         spiro.reset()
@@ -40,7 +52,7 @@ class Application(ttk.Notebook):
         drawspeed = 1000
         default_resolution = (1920, 1200)
         smaller_resolution = (1520, 800)
-        bgcolor = self.colorschemetab.backgroundcolor
+        bgcolor = self._colorschemetab.backgroundcolor
         spiro.setup(drawspeed, speed, bgcolor, hide=True, resolution=default_resolution)
 
     def open_save_dialog(self):
@@ -56,8 +68,8 @@ class Application(ttk.Notebook):
                 os.mkdir(path)
 
     def save(self, mode, name):
-        colors = self.colorschemetab.save()
-        pattern = self.patterntab.save()
+        colors = self._colorschemetab.save()
+        pattern = self._patterntab.save()
         current = {'colors': colors, 'patterns': pattern}
         files = os.listdir(f'./SpiroGenSettings/{mode}')
         files = [f.replace('.json', '') for f in files]
@@ -83,7 +95,7 @@ class Application(ttk.Notebook):
 
     def load(self, mode, name):
         name = name.lower()
-        destinations = {'colors': self.colorschemetab, 'patterns': self.patterntab}
+        destinations = {'colors': self._colorschemetab, 'patterns': self._patterntab}
         existing = os.listdir(f"./SpiroGenSettings/{mode}")
         existing = [f.replace('.json', '') for f in existing]
         if name in existing:
@@ -120,7 +132,7 @@ class Application(ttk.Notebook):
     def run(self):
         try:
             self.setup_drawing()
-            self.patterntab.run(self.colorschemetab.colorscheme)
+            self._patterntab.run(self._colorschemetab.colorscheme)
         except:  # turtle sometimes throws errors when you try to launch after clicking to exit the previous
             self.setup_drawing()
-            self.patterntab.run(self.colorschemetab.colorscheme)  # Running it a second time when this happens works just fine
+            self._patterntab.run(self._colorschemetab.colorscheme)  # Running it a second time when this happens works just fine
