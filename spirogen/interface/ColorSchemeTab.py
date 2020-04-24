@@ -14,7 +14,9 @@ from copy import deepcopy
 from spirogen.interface.Tab import Tab
 from spirogen.interface.Parameter import Parameter
 from spirogen.spirogen import ColorScheme
-from spirogen.interface.Dialogs import ShiftLightnessDialog, RampLightnessDialog
+from spirogen.interface.Dialogs import ShiftLightnessDialog, \
+    RampLightnessDialog, ColorSwatchDialog
+from spirogen.interface.ColorSwatch import ColorSwatch
 
 
 class ColorSchemeTab(Tab):
@@ -150,9 +152,9 @@ class ColorSchemeTab(Tab):
         self._bg_green.trace('w', self.make_bg_color)
         self._bg_blue.trace('w', self.make_bg_color)
 
-        self._bg_color_example = Frame(
-            self, width=20, height=15, highlightbackgroun='black',
-            highlightthickness=1
+        self._bg_color_example = ColorSwatch(
+            self, self._bg_red, self._bg_green, self._bg_blue, height=20,
+            width=25, highlightbackground='black', highlightthickness=1
         )  # this is the swatch preview of the color
 
         # setting default background color to black
@@ -191,7 +193,7 @@ class ColorSchemeTab(Tab):
                      self._bg_green.get(),
                      self._bg_blue.get())
                 )  # create a tkinter compatible color
-                self._bg_color_example.configure(bg=color)  # set the swatch to that color
+                self._bg_color_example.updatecolor(color)  # set the swatch to that color
                 return self.rgb_tk((r, g, b))  # return a spirogen compatible color
             except ValueError:  # if the values could not be converted:
                 # let the user know
@@ -269,6 +271,11 @@ class ColorSchemeTab(Tab):
         return output
 
     def make_color_boxes(self):
+        """
+        This method
+        Returns:
+
+        """
         n = self._colorstops.get()
         prevparams = []
         if 'colorparams' in self._progparams.keys():
@@ -319,17 +326,14 @@ class ColorSchemeTab(Tab):
             )
             bluebox = Entry(self._spacedarea, width=3, textvariable=blue)
 
-            # if len(prevparams) > i and not self.resetcolors:
-            #     red.set(prevparams[i][0])
-            #     green.set(prevparams[i][1])
-            #     blue.set(prevparams[i][2])
-            # else:
             red.set(self.colordict['r'][i])
             green.set(self.colordict['g'][i])
             blue.set(self.colordict['b'][i])
 
             color = self.rgb_tk((red.get(), green.get(), blue.get()))
-            examplebox = Frame(self._spacedarea, width=20, height=15, bg=color)  # , highlightbackgroun='black', highlightthickness=1)
+            examplebox = ColorSwatch(
+                self._spacedarea, red, green, blue, color=color
+            )
 
             col = 20 * (i + 1)  # just so that I have flexibility in positioning things later if I make changes
             col_label.grid(row=8, column=col, pady=10, padx=1)
@@ -366,7 +370,7 @@ class ColorSchemeTab(Tab):
                     newcols[key][i] = val
                     rgb.append(val)
             if len(rgb) == 3:
-                examples[i].configure(bg=self.rgb_tk(rgb))
+                examples[i].updatecolor(self.rgb_tk(rgb))
         self.colordict = newcols
 
     def update_color_boxes(self):

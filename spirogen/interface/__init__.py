@@ -4,3 +4,4 @@ from .Dialogs import SaveDialog, LoadDialog, RampLightnessDialog, \
 from .Parameter import Parameter
 from .PatternTab import PatternTab
 from .SpiroGenPlayground import SpiroGenPlayground
+from .ColorSwatch import ColorSwatch

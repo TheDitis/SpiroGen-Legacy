@@ -15,11 +15,12 @@ from tkinter import Scale
 
 
 class Parameter(Scale):
-    def __init__(self, master=None, row=None, pady=20, **kwargs):
-        self.rangewidth = 10000
+    def __init__(self, master, row=None, pady=20, width=10000, **kwargs):
+        self.rangewidth = width
+        if 'activebackground' not in kwargs:
+            kwargs['activebackground'] = 'blue'
         super().__init__(
-            master, length=self.rangewidth, activebackground='green',
-            orient="horizontal", **kwargs
+            master, length=self.rangewidth, orient="horizontal", **kwargs
         )  # initializing Scale object
         self.columnspan = 790
         self.row = row

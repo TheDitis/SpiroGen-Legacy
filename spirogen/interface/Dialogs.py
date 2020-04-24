@@ -13,7 +13,8 @@ Output:
     They all run the function that they are given when submit is clicked.
 """
 from tkinter import Frame, Toplevel, StringVar, Label, Entry, Button, IntVar, \
-    Radiobutton, Listbox
+    Radiobutton, Listbox, Scale
+from spirogen.interface.Parameter import Parameter
 import os
 
 
@@ -206,4 +207,57 @@ class ListAvailableDialog(Frame):
 class ColorSwatchDialog(Frame):
     def __init__(self, targetbox, targetvars):
         super().__init__(Toplevel())
+        self.master.title('Update Color')
+        self.pack(padx=10, pady=10)
         self.targetbox = targetbox
+        self.targetvars = targetvars
+
+        self.colorview = Frame(self, width=200, height=200, bg=targetbox.color)
+        self.colorview.grid(column=5, row=5)
+
+        rscale = Parameter(
+            self, label='R', width=200, from_=0, to=255, row=210, pady=0,
+            troughcolor='red', activebackground='red',
+            command=lambda *x: self.update_color('r')
+        )
+        gscale = Parameter(
+            self, label='G', width=200, from_=0, to=255, row=220, pady=0,
+            troughcolor='green', activebackground='green',
+            command=lambda *x: self.update_color('g')
+        )
+        bscale = Parameter(
+            self, label='B', width=200, from_=0, to=255, row=230, pady=0,
+            troughcolor='blue', activebackground='blue',
+            command=lambda *x: self.update_color('b')
+        )
+        self.colorparams = {'r': rscale, 'g': gscale, 'b': bscale}
+        for color in self.targetvars:
+            try:
+                val = round(float(self.targetvars[color].get()))
+            except ValueError:
+                print('color values must be numeric and between 0 and 255')
+                val = 0
+            self.colorparams[color].set(val)
+
+    def update_color(self, color):
+        rgb = []
+        indexloc = {'r': 0, 'g': 1, 'b': 2}
+        for k in self.colorparams:
+            param = self.colorparams[k]
+            val = round(float(param.get()))
+            if color == k:
+                self.targetvars[k].set(val)
+                singlecolor = [0, 0, 0]
+                singlecolor[indexloc[k]] = val
+                singlecolor = self.rgb_tk(singlecolor)
+                param.configure(activebackground=singlecolor)
+            rgb.append(val)
+        rgb = self.rgb_tk(rgb)
+        self.colorview.configure(bg=rgb)
+        self.targetbox.configure(bg=rgb)
+
+    @staticmethod
+    def rgb_tk(rgb):
+        rgb = tuple([round(float(i)) for i in rgb])
+        output = "#%02x%02x%02x" % rgb
+        return output
