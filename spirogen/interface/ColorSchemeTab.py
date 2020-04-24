@@ -1,3 +1,14 @@
+"""
+File: ColorSchemeTab.py
+Author: Ryan McKay
+Date: April 13, 2020
+
+Purpose: This a tkinter based tab for the spirogen interface that controls the
+    color scheme for the pattern
+Input: master Notebook
+Output:
+    save method outputs a dictionary to be saved as json
+"""
 from tkinter import StringVar, Label, Button, Entry, Frame
 from copy import deepcopy
 from spirogen.interface.Tab import Tab
@@ -9,64 +20,107 @@ from spirogen.interface.Dialogs import ShiftLightnessDialog, RampLightnessDialog
 class ColorSchemeTab(Tab):
     def __init__(self, master):
         super().__init__(master)
-        self._id = None
+        self._id = None  # currently unused, but will be for saving and loading
+        # dictionary of default colors for initialization and the reset button:
         self._default = {
             'r': [255, 255, 255, 220, 75, 3, 3, 30, 125, 220, 255],
             'g': [0, 150, 255, 255, 255, 255, 145, 3, 3, 3, 0],
             'b': [0, 0, 0, 3, 3, 240, 255, 255, 255, 255, 0]
         }
         # self.backgroundcolor = self.rgb_tk((0, 0, 0))
-        self._resetcolors = True
-        self._colordict = deepcopy(self._default)
+        self._resetcolors = True  # this tells the color boxes to fill themselves with the defaults
+        self._colordict = deepcopy(self._default)  # this is master list of colors that you use and edit. Starts as default
 
+        # variables for the background color:
         self._bg_red = StringVar()
         self._bg_green = StringVar()
         self._bg_blue = StringVar()
-        self._bg_vars = {'r': self._bg_red,
-                        'g': self._bg_green,
-                        'b': self._bg_blue}
+        # putting them all into a single object:
+        self._bg_vars = {
+            'r': self._bg_red,
+            'g': self._bg_green,
+            'b': self._bg_blue
+        }
+        # this will be the swatch that shows you the color
         self._bg_color_example = None
 
+        # label the background control area
         backgroundlabel = Label(self, text="Background:", font=self.h1)
-        backgroundlabel.grid(row=2, column=3, columnspan=300, pady=(10, 5), sticky="nw")
-
+        backgroundlabel.grid(
+            row=2, column=3, columnspan=300, pady=(10, 5), sticky="nw"
+        )
+        # setup the controls for the background color
         self.setup_background_color_area()
 
+        # label the pattern color control area
         patternlabel = Label(self, text="Pattern:", font=self.h1)
-        patternlabel.grid(row=6, column=3, columnspan=300, pady=(10, 5), sticky="nw")
+        patternlabel.grid(
+            row=6, column=3, columnspan=300, pady=(10, 5), sticky="nw"
+        )
 
-        self._totalcolors = Parameter(self, label="Total Colors (fade smoothness)", from_=1, to=300, command=self.check_ratio_tot, row=9)
+        # initializing and setting the main parameters
+        self._totalcolors = Parameter(
+            self, label="Total Colors (fade smoothness)", from_=1, to=300,
+            command=self.check_ratio_tot, row=9
+        )  # this one sets the number of transitionary colors beginning to end of the selected colors
         self._totalcolors.set(100)
-        self._colorstops = Parameter(self, label="Number of Stops", from_=1, to=11, command=self.update_colorstops, row=10)
+        self._colorstops = Parameter(
+            self, label="Number of Stops", from_=1, to=11,
+            command=self.update_colorstops, row=10
+        )  # this one sets the number of colors you define specifically
         self._colorstops.set(5)
 
-        settodefaultcolors = Button(self, text='Load Default Colors', command=self.reset_colors_to_default)
+        settodefaultcolors = Button(
+            self, text='Load Default Colors',
+            command=self.reset_colors_to_default
+        )  # resets colordict back to the default rainbow set
         settodefaultcolors.grid(row=18, column=3, columnspan=300)
-        reversecolors = Button(self, text='Reverse Order', command=self.reverse_color_order)
+        reversecolors = Button(
+            self, text='Reverse Order', command=self.reverse_color_order
+        )  # this button flips the order of the entire color dictionary
         reversecolors.grid(row=18, column=500, columnspan=300)
 
+        # This comes from the Tab class, and it is a Separate frame that can
+        # keep spacing independent from controls on the rest of the tab. this
+        # is where the color boxes will go.
         self._spacedarea.grid(row=20, column=0, columnspan=800)
 
-        self._colorshift = Parameter(self, label="Shift Position", from_=-6, to=6, row=25, command=self.shift_color, bigincrement=1)
-        self.previousshift = 0
+        self._colorshift = Parameter(
+            self, label="Shift Position", from_=-6, to=6, row=25,
+            command=self.shift_color, bigincrement=1
+        )  # this control shifts the position of the colors in the dictionary
+        self.previousshift = 0  # this is for determining the interval of shift (-1 or 1)
 
+        # label the effects section of the tab
         effectslabel = Label(self, text="Effects:", font=self.h2)
-        effectslabel.grid(row=28, column=3,columnspan=200, pady=(10, 5), padx=(10, 0))
+        effectslabel.grid(
+            row=28, column=3,columnspan=200, pady=(10, 5), padx=(10, 0)
+        )
 
-        shiftlightnessbutton = Button(self, text="Shift Lightness", command=lambda: ShiftLightnessDialog(self.shift_lightness))
-        ramplightnessbutton = Button(self, text="Ramp Lightness", command=self.open_ramp_lightness_dialog)
+        # creating the buttons for each color transformation
+        shiftlightnessbutton = Button(
+            self, text="Shift Lightness",
+            command=lambda: ShiftLightnessDialog(self.shift_lightness)
+        )
+        ramplightnessbutton = Button(
+            self, text="Ramp Lightness", command=self.open_ramp_lightness_dialog
+        )
 
-        shiftlightnessbutton.grid(row=30, column=3, columnspan=200, pady=10, padx=(5, 0))
+        shiftlightnessbutton.grid(
+            row=30, column=3, columnspan=200, pady=10, padx=(5, 0)
+        )
         ramplightnessbutton.grid(row=30, column=210, columnspan=200)
 
 
     @property
     def colorscheme(self):
+        # returns a spirogen ColorScheme object with the current parameters
         scheme = ColorScheme(self.currentcolors, self._totalcolors.get())
         return scheme
 
     @property
     def currentcolors(self):
+        # this returns the set of color dictionary that you are actually using
         colors = {'r': [], 'g': [], 'b': []}
         for key in colors:
             colors[key] = self.colordict[key][:self._colorstops.get()]
@@ -74,25 +128,34 @@ class ColorSchemeTab(Tab):
 
     @property
     def backgroundcolor(self):
+        # gets the rgb value tuple
         return self.make_bg_color()
 
     @property
     def colordict(self):
+        # getter for colordict
         return self._colordict
 
     @colordict.setter
     def colordict(self, val):
+        # setter for colordict
         self._colordict = val
-        # self.update_color_boxes()
 
     def setup_background_color_area(self):
+        # creates and places the controls for the backgorund color section
 
+        # binding these variables to the method that groups the colors together,
+        # so that the swatch updates in real time with changes.
         self._bg_red.trace('w', self.make_bg_color)
         self._bg_green.trace('w', self.make_bg_color)
         self._bg_blue.trace('w', self.make_bg_color)
 
-        self._bg_color_example = Frame(self, width=20, height=15, highlightbackgroun='black', highlightthickness=1)
+        self._bg_color_example = Frame(
+            self, width=20, height=15, highlightbackgroun='black',
+            highlightthickness=1
+        )  # this is the swatch preview of the color
 
+        # setting default background color to black
         self._bg_red.set(0)
         self._bg_green.set(0)
         self._bg_blue.set(0)
@@ -113,21 +176,29 @@ class ColorSchemeTab(Tab):
         self._bg_color_example.grid(row=4, column=300)
 
     def make_bg_color(self, *args):
+        # get the value of each bg_color variable
         rstr = self._bg_red.get()
         gstr = self._bg_green.get()
         bstr = self._bg_blue.get()
-        if all(filter(lambda x: x == '', [rstr, gstr, bstr])):
-            try:
+        # if none of the boxes are empty:
+        if all(map(lambda x: x != '', [rstr, gstr, bstr])):
+            try:  # try to convert them to integers:
                 r = round(float(rstr))
                 g = round(float(gstr))
                 b = round(float(bstr))
-                color = self.rgb_tk((self._bg_red.get(), self._bg_green.get(), self._bg_blue.get()))
-                self._bg_color_example.configure(bg=color)
-                return self.rgb_tk((r, g, b))
-            except ValueError:
+                color = self.rgb_tk(
+                    (self._bg_red.get(),
+                     self._bg_green.get(),
+                     self._bg_blue.get())
+                )  # create a tkinter compatible color
+                self._bg_color_example.configure(bg=color)  # set the swatch to that color
+                return self.rgb_tk((r, g, b))  # return a spirogen compatible color
+            except ValueError:  # if the values could not be converted:
+                # let the user know
                 print('Color values must be numbers between 0 and 255')
 
     def reset_colors_to_default(self):
+        # this method is run by the reset colors button, and is self explanitory
         self._resetcolors = True
         self.colordict = deepcopy(self._default)
         self.colordict = deepcopy(self._default)
@@ -135,7 +206,7 @@ class ColorSchemeTab(Tab):
         self.update_color_boxes()
 
     def update_colorstops(self, *args):
-        self.check_ratio_stops(*args)
+        self.check_ratio_stops(*args) #
         self.make_color_boxes()
 
     def shift_color(self, *args):
@@ -231,15 +302,21 @@ class ColorSchemeTab(Tab):
             col_label = Label(self._spacedarea, text=str(i + 1))
 
             red = StringVar()
-            red.trace('w', lambda *x: self.update_color_dict(x, index=i, key='r'))
+            red.trace(
+                'w', lambda *x: self.update_color_dict(x, index=i, key='r')
+            )
             redbox = Entry(self._spacedarea, width=3, textvariable=red)
 
             green = StringVar()
-            green.trace('w', lambda *x: self.update_color_dict(x, index=i, key='g'))
+            green.trace(
+                'w', lambda *x: self.update_color_dict(x, index=i, key='g')
+            )
             greenbox = Entry(self._spacedarea, width=3, textvariable=green)
 
             blue = StringVar()
-            blue.trace('w', lambda *x: self.update_color_dict(x, index=i, key='b'))
+            blue.trace(
+                'w', lambda *x: self.update_color_dict(x, index=i, key='b')
+            )
             bluebox = Entry(self._spacedarea, width=3, textvariable=blue)
 
             # if len(prevparams) > i and not self.resetcolors:

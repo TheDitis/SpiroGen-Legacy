@@ -1,4 +1,19 @@
-from tkinter import Frame, Toplevel, StringVar, Label, Entry, Button, IntVar, Radiobutton, Listbox
+"""
+File: Dialogs.py
+Author: Ryan McKay
+Date: April 18, 2020
+
+Purpose: These dialogs allow for extra functionality for the SpiroGen interface.
+    They are all very simple with only a few widgets each
+Input: All of the dialogs take a function to run upon submit except for the
+    ListAvailableDialog, which takes the stringvar for the entry box for the
+    name of the setting, which is set when a name is clicked on. it also takes
+    the type of load/save as a string. This is the folder it is to list from.
+Output:
+    They all run the function that they are given when submit is clicked.
+"""
+from tkinter import Frame, Toplevel, StringVar, Label, Entry, Button, IntVar, \
+    Radiobutton, Listbox
 import os
 
 
@@ -37,13 +52,7 @@ class RampLightnessDialog(Frame):
         super().__init__(Toplevel())
         self.master.title('Ramp Lightness')
         self._func = func
-        # self.frame = Frame(self, width=800, height=200)
         self.pack(padx=20, pady=20)
-
-        # for i in range(self.rows):
-        #     self.grid_rowconfigure(i, minsize=1 / 8000, weight=1)
-        # for i in range(self.columns):
-        #     self.grid_columnconfigure(i, minsize=1 / 8000, weight=1)
 
         self._amount = StringVar()
         self._direction = IntVar()
@@ -57,13 +66,18 @@ class RampLightnessDialog(Frame):
         amtlabel = Label(self, text='Amount:')
         amtbox = Entry(self, width=5, textvariable=self._amount)
         directionlabel = Label(self, text='Direction:')
-        leftbutton = Radiobutton(self, text='Left', width=8, indicatoron=False, value=0, variable=self._direction)
-        rightbutton = Radiobutton(self, text='Right', width=8, indicatoron=False, value=1, variable=self._direction)
+        leftbutton = Radiobutton(
+            self, text='Left', width=8, indicatoron=False, value=0,
+            variable=self._direction
+        )
+        rightbutton = Radiobutton(
+            self, text='Right', width=8, indicatoron=False, value=1,
+            variable=self._direction
+        )
         gotolabel = Label(self, text='Go To %:')
         gotobox = Entry(self, width=5, textvariable=self._goto)
         applybtn = Button(self, text="Apply", command=self.apply)
 
-        # ramplightlabel.grid(row=35, column=3, columnspan=180, pady=(20, 0))
         amtlabel.grid(row=38, column=3, columnspan=120, pady=10)
         amtbox.grid(row=38, column=125, columnspan=80)
         directionlabel.grid(row=42, column=3, columnspan=90, pady=10)
@@ -118,25 +132,39 @@ class LoadDialog(Frame):
         self.master.title("Load")
         self.pack(padx=30, pady=30)
 
+        self.master.protocol("WM_DELETE_WINDOW", self.on_close)
+
         mode = StringVar()
         mode.set('sessions')
-        session = Radiobutton(self, text="Session", width=8, indicatoron=False, value="sessions", variable=mode)
-        pattern = Radiobutton(self, text="Pattern", width=8, indicatoron=False, value='patterns', variable=mode)
-        colors = Radiobutton(self, text="Colors", width=8, indicatoron=False, value='colors', variable=mode)
+        session = Radiobutton(
+            self, text="Session", width=8, indicatoron=False, value="sessions",
+            variable=mode
+        )
+        pattern = Radiobutton(
+            self, text="Pattern", width=8, indicatoron=False, value='patterns',
+            variable=mode
+        )
+        colors = Radiobutton(
+            self, text="Colors", width=8, indicatoron=False, value='colors',
+            variable=mode
+        )
         self._pick = None
-
-        self._name = StringVar()
+        #
+        name = StringVar()
         namelabel = Label(self, text="Name:")
         namebox = Entry(self, textvariable=self._name)
 
         listbtn = Button(
             self,
             text="List Available",
-            command=lambda: self.list_dialog(mode)
+            command=lambda: self.list_dialog(mode, name)
         )
         self._choosedlg = None
 
-        loadbtn = Button(self, text="Load", command=lambda: func(mode.get(), self._name.get()))
+        loadbtn = Button(
+            self, text="Load",
+            command=lambda: func(mode.get(), name.get())
+        )
 
         session.grid(row=10, column=9, columnspan=100)
         pattern.grid(row=10, column=120, columnspan=100, padx=20)
@@ -147,27 +175,35 @@ class LoadDialog(Frame):
         listbtn.grid(row=20, column=9, columnspan=50, sticky='sw')
         loadbtn.grid(row=20, column=250, columnspan=50, sticky='se')
 
-    def list_dialog(self, mode):
-        self._choosedlg = ListAvailableDialog(self._name, mode.get())
+    def list_dialog(self, mode, name):
+        ListAvailableDialog(name.get(), mode.get())
+
+    def on_close(self):
+        self.destroy()
+        self.master.destroy()
 
 
 class ListAvailableDialog(Frame):
-    def __init__(self, var, type='sessions'):
+    def __init__(self, namevar, type='sessions'):
         super().__init__(Toplevel())
-        self.var = var
+        self.namevar = namevar
         self.master.title(f"Loadable {type.capitalize()[:-1]} Names")
-        # self.master.geometry("300x400")
         self.pack(padx=30, pady=30)
 
         files = os.listdir(f'./SpiroGenSettings/{type}')
         lbox = Listbox(self)
         for i, file in enumerate(files):
             lbox.insert(i, file.replace('.json', ''))
-        # self.list.grid(row=10, column=10, columnspan=90)
         lbox.pack(fill="both")
         lbox.bind('<<ListboxSelect>>', self.get_value)
 
     def get_value(self, event):
         w = event.widget
         ind = int(w.curselection()[0])
-        self.var.set(w.get(ind))
+        self.namevar.set(w.get(ind))
+
+
+class ColorSwatchDialog(Frame):
+    def __init__(self, targetbox, targetvars):
+        super().__init__(Toplevel())
+        self.targetbox = targetbox
