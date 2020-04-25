@@ -213,16 +213,18 @@ class ListAvailableDialog(Frame):
 
 
 class ColorSwatchDialog(Frame):
-    def __init__(self, targetbox, targetvars, curcolors, defaultcolors):
+    def __init__(self, targetswatch, curcolors, defaultcolors):
+        # for k in curcolors:
+        #     print(curcolors[k])
         super().__init__(Toplevel())
         self.master.title('Update Color')
         self.pack(padx=10, pady=10)
-        self.targetbox = targetbox
-        self.targetvars = targetvars
+        self.targetbox = targetswatch
+        self.targetvars = targetswatch.targets
         self.curcolors = curcolors
         self.defaultcolors = defaultcolors
 
-        self.colorview = Frame(self, width=200, height=200, bg=targetbox.color)
+        self.colorview = Frame(self, width=200, height=200, bg=targetswatch.color)
         self.colorview.grid(column=5, row=5, rowspan=200, columnspan=200)
 
         rscale = Parameter(
@@ -272,18 +274,23 @@ class ColorSwatchDialog(Frame):
     def setup_swatch_selection(self):
         current = self.curcolors
         defaultcolors = self.defaultcolors
-        length = len(self.defaultcolors['r'])
-
+        length = len(self.curcolors['r'])
+        print('\n')
+        print('\n')
+        for k in self.curcolors:
+            print(self.curcolors[k])
         for i in range(length):
             rgb = tuple(current[k][i] for k in ['r', 'g', 'b'])
-            swatch = SelectableColorSwatch(self.swatch_area, rgb,
-                                           self.grab_swatch_color)
+            # print(rgb)
+            swatch = SelectableColorSwatch(
+                self.swatch_area, color=rgb, func=self.grab_swatch_color
+            )
             swatch.grid(column=10*(i+1), row=10, padx=2)
 
-            # rgb = tuple(defaultcolors[k][i] for k in ['r', 'g', 'b'])
-            # swatch = SelectableColorSwatch(self.swatch_area, rgb,
-            #                                self.grab_swatch_color)
-            # swatch.grid(column=10 * (i + 1), row=20, padx=2, pady=4)
+            rgb = tuple(defaultcolors[k][i] for k in ['r', 'g', 'b'])
+            swatch = SelectableColorSwatch(self.swatch_area, rgb,
+                                           self.grab_swatch_color)
+            swatch.grid(column=10 * (i + 1), row=20, padx=2, pady=4)
 
     def grab_swatch_color(self, color):
         color = {'r': color[0], 'g': color[1], 'b': color[2]}
@@ -307,7 +314,6 @@ class SelectableColorSwatch(Frame):
 
     @staticmethod
     def rgb_tk(rgb):
-        print('rgb', rgb)
         rgb = tuple([round(float(i)) for i in rgb])
         output = "#%02x%02x%02x" % rgb
         return output

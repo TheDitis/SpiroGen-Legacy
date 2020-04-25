@@ -13,19 +13,23 @@ Input: master frame, and the tkinter variable objects for each of the three
 Output:
     Just displays a color
 """
+from copy import deepcopy
 from tkinter import Frame
 from spirogen.interface.Dialogs import ColorSwatchDialog
 
 
 class ColorSwatch(Frame):
-    def __init__(self, master, rvar, gvar, bvar, curcolors, defaultcolors,
-                 **kwargs):
-        targets = {'r': rvar, 'g': gvar, 'b': bvar}
+    def __init__(self, master, rvar, gvar, bvar, curcolors, defaultcolors, func,
+                 index=None, **kwargs):
+        self.func = func
+        self.targets = {'r': rvar, 'g': gvar, 'b': bvar}
+        self.curcolors = deepcopy(curcolors)
+        self.defaultcolors = defaultcolors
         if 'color' in kwargs:
             self.color = kwargs.pop('color')
         else:
             self.color = []
-            for var in targets.values():
+            for var in self.targets.values():
                 strval = var.get()
                 if strval == '':
                     val = 0
@@ -43,10 +47,10 @@ class ColorSwatch(Frame):
             if key not in kwargs:
                 kwargs[key] = defaults[key]
         super().__init__(master, **kwargs, bg=self.color)
+        self.bind("<Button-1>", self.open_editor)
 
-        self.bind("<Button-1>", lambda *x: ColorSwatchDialog(
-            self, targets, curcolors, defaultcolors
-        ))
+    def open_editor(self, *args):
+        self.func(self)
 
     def updatecolor(self, rgb):
         self.configure(bg=rgb)
