@@ -208,14 +208,11 @@ class ListAvailableDialog(Frame):
     def get_value(self, event):
         w = event.widget
         ind = int(w.curselection()[0])
-        print('widget', w)
         self.namevar.set(w.get(ind))
 
 
 class ColorSwatchDialog(Frame):
     def __init__(self, targetswatch, curcolors, defaultcolors):
-        # for k in curcolors:
-        #     print(curcolors[k])
         super().__init__(Toplevel())
         self.master.title('Update Color')
         self.pack(padx=10, pady=10)
@@ -275,13 +272,8 @@ class ColorSwatchDialog(Frame):
         current = self.curcolors
         defaultcolors = self.defaultcolors
         length = len(self.curcolors['r'])
-        print('\n')
-        print('\n')
-        for k in self.curcolors:
-            print(self.curcolors[k])
         for i in range(length):
             rgb = tuple(current[k][i] for k in ['r', 'g', 'b'])
-            # print(rgb)
             swatch = SelectableColorSwatch(
                 self.swatch_area, color=rgb, func=self.grab_swatch_color
             )

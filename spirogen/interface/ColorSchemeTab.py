@@ -334,9 +334,6 @@ class ColorSchemeTab(Tab):
 
             color = self.rgb_tk((red.get(), green.get(), blue.get()))
 
-            print('\n')
-            for k in self.colordict:
-                print('in mcb', k, self.colordict[k])
             examplebox = ColorSwatch(
                 self._spacedarea, red, green, blue, color=color,
                 curcolors=self.colordict, defaultcolors=self._default,

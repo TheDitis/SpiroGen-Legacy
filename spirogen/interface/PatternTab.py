@@ -163,8 +163,8 @@ class PatternTab(Tab):
                     angles[i][j] = float(val)
                 except ValueError:
                     angles[i][j] = len(val)
-                    print("angle values should be numerical. Using length of "
-                          "input as angle")
+                    # print("angle values should be numerical. Using length of "
+                    #       "input as angle")
         self._parameters['angles'] = [i for i in angles if i[0] != 0]
 
     def set_sin_spiral(self):
@@ -325,7 +325,8 @@ class PatternTab(Tab):
                 curvebox.set(angles[i][1])  # set the curve to the retrieeved value
         for k in params:  # for each key in the parameter dictionary:
             if k in self._parameters:  # if that parameter already exists in the master parameter dictionary:
-                self._parameters[k].set(params[k])  # set that parameter to the retrieved value for that param
+                if not isinstance(self._parameters[k], list):
+                    self._parameters[k].set(params[k])  # set that parameter to the retrieved value for that param
             else:  # if that parameter isn't already in the list:
                 self._parameters[k] = params[k]  # add it
 
