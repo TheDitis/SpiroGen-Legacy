@@ -24,7 +24,8 @@ class Parameter(Scale):
         )  # initializing Scale object
         self.columnspan = 790
         self.row = row
-        self.label = kwargs['label']
+        if 'label' in kwargs:
+            self.label = kwargs['label']
         # and adding it to the grid:
         self.grid(column=1, columnspan=self.columnspan, row=self.row, pady=pady)
 

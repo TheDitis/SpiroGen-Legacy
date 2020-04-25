@@ -268,7 +268,8 @@ class PatternTab(Tab):
         }
 
     def clear(self):
-        #  This method is used to remove all Widgets from the frame when switching pattern types
+        #  This method is used to remove all Widgets from the frame when
+        #  switching pattern types
         for p in self._parameters.values():
             if isinstance(p, Widget):
                 p.grid_forget()
@@ -302,13 +303,13 @@ class PatternTab(Tab):
 
     def load(self, data):
         """
-
+        Sets parameters to the values in the data retrieved
         Args:
             data: a Dictionary with patterntype, parameters, and progparams if
             the retrieved pattern is of radialangular type
 
         Returns:
-
+            None
         """
         # Set patternselection to retrieved value, which is bound to the _setpattern method:
         self._patternselection.set(data['patterntype'])

@@ -16,6 +16,8 @@ from tkinter import Frame, Toplevel, StringVar, Label, Entry, Button, IntVar, \
     Radiobutton, Listbox, Scale
 from spirogen.interface.Parameter import Parameter
 import os
+import re
+from matplotlib.colors import rgb2hex, hex2color, to_rgb
 
 
 class ShiftLightnessDialog(Frame):
@@ -225,17 +227,17 @@ class ColorSwatchDialog(Frame):
         self.colorview.grid(column=5, row=5, rowspan=200, columnspan=200)
 
         rscale = Parameter(
-            self, label='R', width=200, from_=0, to=255, row=210, pady=0,
+            self, width=200, from_=0, to=255, row=210, pady=0,
             troughcolor='red', activebackground='red',
             command=lambda *x: self.update_color('r')
         )
         gscale = Parameter(
-            self, label='G', width=200, from_=0, to=255, row=220, pady=0,
-            troughcolor='green', activebackground='green',
+            self, width=200, from_=0, to=255, row=220, pady=0,
+            troughcolor='#0F0', activebackground='#0F0',
             command=lambda *x: self.update_color('g')
         )
         bscale = Parameter(
-            self, label='B', width=200, from_=0, to=255, row=230, pady=0,
+            self, width=200, from_=0, to=255, row=230, pady=0,
             troughcolor='blue', activebackground='blue',
             command=lambda *x: self.update_color('b')
         )
@@ -248,7 +250,18 @@ class ColorSwatchDialog(Frame):
                 val = 0
             self.colorparams[color].set(val)
         self.swatch_area = Frame(self)
-        self.swatch_area.grid(column=0, row=5, padx=10)
+        self.swatch_area.grid(column=0, row=5, padx=10, rowspan=250)
+
+        self.hexvar = StringVar()
+        self.hexvar.set(
+            rgb2hex((rscale.get()/255, gscale.get()/255, bscale.get()/255))
+        )
+        hexlabel = Label(self, text='Hex:')
+        hexbox = Entry(self, width=20, textvariable=self.hexvar)
+        hexlabel.grid(row=260, column=5)
+        hexbox.grid(row=279, column=5, columnspan=195)
+        self.hexvar.trace('w', self.set_from_hex)
+
         self.setup_swatch_selection()
 
     def update_color(self, color):
@@ -272,22 +285,52 @@ class ColorSwatchDialog(Frame):
         current = self.curcolors
         defaultcolors = self.defaultcolors
         length = len(self.curcolors['r'])
+        black = SelectableColorSwatch(
+            self.swatch_area, color=(0, 0, 0), func=self.grab_swatch_color
+        )
+        black.grid(row=5, column=10, padx=2, pady=(0, 15))
+        white = SelectableColorSwatch(
+            self.swatch_area, color=(255, 255, 255),
+            func=self.grab_swatch_color, highlightbackground='black',
+            highlightthickness=1
+        )
+        white.grid(row=5, column=20, padx=2, pady=(0, 15))
         for i in range(length):
             rgb = tuple(current[k][i] for k in ['r', 'g', 'b'])
             swatch = SelectableColorSwatch(
-                self.swatch_area, color=rgb, func=self.grab_swatch_color
+                self.swatch_area, color=rgb, func=self.grab_swatch_color,
+                highlightbackground='black', highlightthickness=1
             )
-            swatch.grid(column=10*(i+1), row=10, padx=2)
+            swatch.grid(row=10*(i+1), column=10, padx=2)
 
             rgb = tuple(defaultcolors[k][i] for k in ['r', 'g', 'b'])
-            swatch = SelectableColorSwatch(self.swatch_area, rgb,
-                                           self.grab_swatch_color)
-            swatch.grid(column=10 * (i + 1), row=20, padx=2, pady=4)
+            swatch = SelectableColorSwatch(
+                self.swatch_area, rgb, self.grab_swatch_color,
+                highlightbackground='black', highlightthickness=1
+            )
+            swatch.grid(row=10 * (i + 1), column=20, padx=2, pady=4)
 
     def grab_swatch_color(self, color):
         color = {'r': color[0], 'g': color[1], 'b': color[2]}
         for k in color:
             self.colorparams[k].set(color[k])
+
+    def set_from_hex(self, *args):
+        hex = self.hexvar.get()
+        if '#' in hex and (len(hex) == 7 or len(hex) == 4):
+            match = re.search('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', hex)
+            if match:
+                rgb = tuple(round(i * 255) for i in (hex2color(hex)))
+                indicies = {'r': 0, 'g': 1, 'b': 2}
+                for k in self.colorparams:
+                    self.colorparams[k].set(rgb[indicies[k]])
+
+
+    @staticmethod
+    def hex_to_rgb(hexstr):
+        hexstr = hexstr.strip('#')
+        hlen = len(hexstr)
+        return tuple(int(hexstr[i:i+hlen//3], 16) for i in range(0, hlen, hlen//3))
 
     @staticmethod
     def rgb_tk(rgb):
@@ -297,10 +340,10 @@ class ColorSwatchDialog(Frame):
 
 
 class SelectableColorSwatch(Frame):
-    def __init__(self, master, color, func):
+    def __init__(self, master, color, func, **kwargs):
         self.color = color
         super().__init__(
-            master, bg=self.rgb_tk(self.color), height=15, width=20
+            master, bg=self.rgb_tk(self.color), height=25, width=30, **kwargs
         )
         self.bind("<Button-1>", lambda *x: func(color))
 
