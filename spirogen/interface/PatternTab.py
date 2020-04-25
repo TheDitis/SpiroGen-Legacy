@@ -61,15 +61,14 @@ class PatternTab(Tab):
         }
 
     def _set_radial_angular(self):
+        # creating, adding, & setting parameters:
         size = Parameter(self, label="Size", from_=10, to=1000, row=3)
         size.set(500)
-
-        self._n_angles = IntVar(self)
-
-        self._spacedarea.grid(row=6, column=0, columnspan=800)
-
         pensize = Parameter(self, label="Pen Size", from_=1, to=40, row=10)
-        # self.anglearea.grid_columnconfigure(weight=1)
+
+        self._n_angles = IntVar(self)  # variable for the angle number menu
+
+        self._spacedarea.grid(row=6, column=0, columnspan=800)  # adding the frame from the superclass that allows for even spacing
 
         self._parameters = {"size": size, 'pensize': pensize}  # for the parameters that feed into the pattern function
         self._progparams = {'n_angles': self._n_angles}  # for the parameters that help create function parameters, but dont feed in directly
@@ -78,6 +77,7 @@ class PatternTab(Tab):
         self._n_angles.trace('w', self._make_angle_boxes)  # Making sure that _make_angle_boxes runs every time this control is moved
         self._n_angles.set(options[0])  # setting the default number of angles to 1
 
+        # making, labeling, and adding dropdown menu
         self.n_angles_menu = OptionMenu(self, self._n_angles, *options)
         dropdownlabel = Label(self, text="Number of Angles:")
         dropdownlabel.grid(row=4, column=400, pady=(10, 0))
@@ -108,14 +108,14 @@ class PatternTab(Tab):
             self._parameters['jank'].grid_forget()
         self._progparams['anglevariables'] = []
 
-        for i in range(n):
+        for i in range(n):  # n is the number of angles we are setting
             anglevar = StringVar()
-            # anglevar.trace('w', self.set_angles)
+            anglevar.trace('w', self.set_angles)
             anglebox = Entry(self._spacedarea, width=5, textvariable=anglevar)
             label1 = Label(self._spacedarea, text=f"angle {str(i + 1)}")
 
             curvevar = StringVar()
-            # curvevar.trace('w', self.set_angles)
+            curvevar.trace('w', self.set_angles)
             curvebox = Entry(self._spacedarea, width=5, textvariable=curvevar)
             label2 = Label(self._spacedarea, text=f"curve {str(i + 1)}")
             if len(prevparams) > i:
@@ -137,7 +137,6 @@ class PatternTab(Tab):
                 jank.grid(row=12, column=100, rowspan=3)
                 self._parameters['turncycle'] = turncycle
                 self._parameters['jank'] = jank
-
             col = 20 * (i + 1)  # just so that I have flexibility in positioning things later if I make changes
             label1.grid(row=9, column=col, pady=10)
             anglebox.grid(row=10, column=col, padx=20)
@@ -149,11 +148,12 @@ class PatternTab(Tab):
             self._progparams['anglevariables'].append(
                 [anglevar, curvevar]
             )
-            # self.progparams['curveboxes'].append([curvebox, label2])
+            self.set_angles()
 
     def set_angles(self, *args):
-        angleparams = self._progparams['angleparams']
-        angles = [[i[0].get(), i[2].get()] for i in angleparams]
+        angleparams = self._progparams['anglevariables']
+        # angles = [[i[0].get(), i[2].get()] for i in angleparams]
+        angles = [[i[0].get(), i[1].get()] for i in angleparams]
 
         for i in range(len(angles)):
             angle = angles[i]
