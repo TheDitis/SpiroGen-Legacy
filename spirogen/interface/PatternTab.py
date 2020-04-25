@@ -1,15 +1,4 @@
-"""
-File: PatternTab.py
-Author: Ryan McKay
-Date: April 13, 2020
 
-Purpose: This a tkinter based tab for the spirogen interface that controls the
-    pattern type and parameters.
-Input: master Notebook
-Output:
-    save method outputs a dictionary to be saved as json
-    run method opens a window and draws the pattern
-"""
 from tkinter import StringVar, BooleanVar, IntVar, OptionMenu, Label, Entry, \
     Scale, Radiobutton, Widget
 from spirogen.interface.Tab import Tab
@@ -60,7 +49,9 @@ class PatternTab(Tab):
         innerdepth = Parameter(self, label="Petal Depth", from_=0, to=6,
                                resolution=0.1, bigincrement=0.1, row=6)
         innerdepth.set(1)
-        size = Parameter(self, label="size", from_=1, to=10, row=7)
+        size = Parameter(
+            self, label="size", from_=1, to=10, row=7, resolution=0.1
+        )
         pensize = Parameter(self, label="pen size", from_=1, to=40, row=8)
 
         # add all parameters to the patterntab's master list.

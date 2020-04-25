@@ -18,23 +18,24 @@ from spirogen.interface.Dialogs import ColorSwatchDialog
 
 
 class ColorSwatch(Frame):
-    def __init__(self, master, rvar, gvar, bvar, **kwargs):
+    def __init__(self, master, rvar, gvar, bvar, curcolors, defaultcolors,
+                 **kwargs):
         targets = {'r': rvar, 'g': gvar, 'b': bvar}
         if 'color' in kwargs:
             self.color = kwargs.pop('color')
         else:
             self.color = []
             for var in targets.values():
-                try:
-                    strval = var.get()
-                    if strval == '':
-                        val = 0
-                    else:
-                        val = round(float(strval))
-                except:
-                    print(
-                        'color values must be numeric values between 0 and 255.')
+                strval = var.get()
+                if strval == '':
                     val = 0
+                else:
+                    try:
+                        val = round(float(strval))
+                    except ValueError:
+                        print('color values must be numeric values between 0 '
+                              'and 255.')
+                        val = 0
                 self.color.append(val)
             self.color = self.rgb_tk(self.color)
         defaults = {'height': 15, 'width': 20}
@@ -43,7 +44,9 @@ class ColorSwatch(Frame):
                 kwargs[key] = defaults[key]
         super().__init__(master, **kwargs, bg=self.color)
 
-        self.bind("<Button-1>", lambda *x: ColorSwatchDialog(self, targets))
+        self.bind("<Button-1>", lambda *x: ColorSwatchDialog(
+            self, targets, curcolors, defaultcolors
+        ))
 
     def updatecolor(self, rgb):
         self.configure(bg=rgb)

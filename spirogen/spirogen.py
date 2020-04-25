@@ -1945,7 +1945,8 @@ def dot(loc=(0, 0), size=3, color='white'):
 
 def wait():
     turtle.hideturtle()
-    turtle.exitonclick()
+    turtle.done()
+    # turtle.exitonclick()
 
 
 def reset():

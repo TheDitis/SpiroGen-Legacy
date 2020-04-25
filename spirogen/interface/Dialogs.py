@@ -108,15 +108,26 @@ class SaveDialog(Frame):
 
         mode = StringVar()
         mode.set('sessions')
-        session = Radiobutton(self, text="Session", width=8, indicatoron=False, value="sessions", variable=mode)
-        pattern = Radiobutton(self, text="Pattern", width=8, indicatoron=False, value='patterns', variable=mode)
-        colors = Radiobutton(self, text="Colors", width=8, indicatoron=False, value='colors', variable=mode)
+        session = Radiobutton(
+            self, text="Session", width=8, indicatoron=False, value="sessions",
+            variable=mode
+        )
+        pattern = Radiobutton(
+            self, text="Pattern", width=8, indicatoron=False, value='patterns',
+            variable=mode
+        )
+        colors = Radiobutton(
+            self, text="Colors", width=8, indicatoron=False, value='colors',
+            variable=mode
+        )
 
         name = StringVar()
         namelabel = Label(self, text="Name:")
         namebox = Entry(self, textvariable=name)
 
-        savebtn = Button(self, text="Save", command=lambda: func(mode.get(), name.get()))
+        savebtn = Button(
+            self, text="Save", command=lambda: func(mode.get(), name.get())
+        )
 
         session.grid(row=10, column=9, columnspan=100)
         pattern.grid(row=10, column=120, columnspan=100, padx=20)
@@ -133,7 +144,7 @@ class LoadDialog(Frame):
         self.master.title("Load")
         self.pack(padx=30, pady=30)
 
-        self.master.protocol("WM_DELETE_WINDOW", self.on_close)
+        # self.master.protocol("WM_DELETE_WINDOW", self.on_close)
 
         mode = StringVar()
         mode.set('sessions')
@@ -153,12 +164,12 @@ class LoadDialog(Frame):
         #
         name = StringVar()
         namelabel = Label(self, text="Name:")
-        namebox = Entry(self, textvariable=self._name)
+        namebox = Entry(self, textvariable=name)
 
         listbtn = Button(
             self,
             text="List Available",
-            command=lambda: self.list_dialog(mode, name)
+            command=lambda: self.list_dialog(name, mode)
         )
         self._choosedlg = None
 
@@ -176,12 +187,8 @@ class LoadDialog(Frame):
         listbtn.grid(row=20, column=9, columnspan=50, sticky='sw')
         loadbtn.grid(row=20, column=250, columnspan=50, sticky='se')
 
-    def list_dialog(self, mode, name):
-        ListAvailableDialog(name.get(), mode.get())
-
-    def on_close(self):
-        self.destroy()
-        self.master.destroy()
+    def list_dialog(self, name, mode):
+        ListAvailableDialog(name, mode.get())
 
 
 class ListAvailableDialog(Frame):
@@ -201,19 +208,22 @@ class ListAvailableDialog(Frame):
     def get_value(self, event):
         w = event.widget
         ind = int(w.curselection()[0])
+        print('widget', w)
         self.namevar.set(w.get(ind))
 
 
 class ColorSwatchDialog(Frame):
-    def __init__(self, targetbox, targetvars):
+    def __init__(self, targetbox, targetvars, curcolors, defaultcolors):
         super().__init__(Toplevel())
         self.master.title('Update Color')
         self.pack(padx=10, pady=10)
         self.targetbox = targetbox
         self.targetvars = targetvars
+        self.curcolors = curcolors
+        self.defaultcolors = defaultcolors
 
         self.colorview = Frame(self, width=200, height=200, bg=targetbox.color)
-        self.colorview.grid(column=5, row=5)
+        self.colorview.grid(column=5, row=5, rowspan=200, columnspan=200)
 
         rscale = Parameter(
             self, label='R', width=200, from_=0, to=255, row=210, pady=0,
@@ -238,6 +248,9 @@ class ColorSwatchDialog(Frame):
                 print('color values must be numeric and between 0 and 255')
                 val = 0
             self.colorparams[color].set(val)
+        self.swatch_area = Frame(self)
+        self.swatch_area.grid(column=0, row=5, padx=10)
+        self.setup_swatch_selection()
 
     def update_color(self, color):
         rgb = []
@@ -256,8 +269,45 @@ class ColorSwatchDialog(Frame):
         self.colorview.configure(bg=rgb)
         self.targetbox.configure(bg=rgb)
 
+    def setup_swatch_selection(self):
+        current = self.curcolors
+        defaultcolors = self.defaultcolors
+        length = len(self.defaultcolors['r'])
+
+        for i in range(length):
+            rgb = tuple(current[k][i] for k in ['r', 'g', 'b'])
+            swatch = SelectableColorSwatch(self.swatch_area, rgb,
+                                           self.grab_swatch_color)
+            swatch.grid(column=10*(i+1), row=10, padx=2)
+
+            # rgb = tuple(defaultcolors[k][i] for k in ['r', 'g', 'b'])
+            # swatch = SelectableColorSwatch(self.swatch_area, rgb,
+            #                                self.grab_swatch_color)
+            # swatch.grid(column=10 * (i + 1), row=20, padx=2, pady=4)
+
+    def grab_swatch_color(self, color):
+        color = {'r': color[0], 'g': color[1], 'b': color[2]}
+        for k in color:
+            self.colorparams[k].set(color[k])
+
     @staticmethod
     def rgb_tk(rgb):
+        rgb = tuple([round(float(i)) for i in rgb])
+        output = "#%02x%02x%02x" % rgb
+        return output
+
+
+class SelectableColorSwatch(Frame):
+    def __init__(self, master, color, func):
+        self.color = color
+        super().__init__(
+            master, bg=self.rgb_tk(self.color), height=15, width=20
+        )
+        self.bind("<Button-1>", lambda *x: func(color))
+
+    @staticmethod
+    def rgb_tk(rgb):
+        print('rgb', rgb)
         rgb = tuple([round(float(i)) for i in rgb])
         output = "#%02x%02x%02x" % rgb
         return output

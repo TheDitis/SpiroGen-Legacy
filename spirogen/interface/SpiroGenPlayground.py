@@ -12,6 +12,7 @@ from spirogen import spirogen as spiro
 from spirogen.interface.PatternTab import PatternTab
 from spirogen.interface.ColorSchemeTab import ColorSchemeTab
 from spirogen.interface.Dialogs import SaveDialog, LoadDialog
+import turtle
 import os
 import random
 import json
@@ -145,6 +146,6 @@ class SpiroGenPlayground(ttk.Notebook):
         try:
             self.setup_drawing()  # setup the window parameters
             self._patterntab.run(self._colorschemetab.colorscheme)  # call the run method of the pattern tab, passing the colorscheme info
-        except:  # turtle sometimes throws errors when you try to launch after clicking to exit the previous
+        except turtle.Terminator:  # turtle sometimes throws errors when you try to launch after clicking to exit the previous
             self.setup_drawing()
             self._patterntab.run(self._colorschemetab.colorscheme)  # Running it a second time when this happens works just fine

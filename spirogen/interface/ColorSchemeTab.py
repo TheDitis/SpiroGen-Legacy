@@ -154,6 +154,7 @@ class ColorSchemeTab(Tab):
 
         self._bg_color_example = ColorSwatch(
             self, self._bg_red, self._bg_green, self._bg_blue, height=20,
+            curcolors=self.colordict, defaultcolors=self._default,
             width=25, highlightbackground='black', highlightthickness=1
         )  # this is the swatch preview of the color
 
@@ -332,7 +333,8 @@ class ColorSchemeTab(Tab):
 
             color = self.rgb_tk((red.get(), green.get(), blue.get()))
             examplebox = ColorSwatch(
-                self._spacedarea, red, green, blue, color=color
+                self._spacedarea, red, green, blue, color=color,
+                curcolors=self._colordict, defaultcolors=self._default
             )
 
             col = 20 * (i + 1)  # just so that I have flexibility in positioning things later if I make changes
