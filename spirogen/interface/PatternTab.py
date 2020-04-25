@@ -1,15 +1,4 @@
-"""
-File: PatternTab.py
-Author: Ryan McKay
-Date: April 13, 2020
 
-Purpose: This a tkinter based tab for the spirogen_ interface that controls the
-    pattern type and parameters.
-Input: master window
-Output:
-    save method outputs a dictionary to be saved as json
-    run method opens a window and draws the pattern
-"""
 from tkinter import StringVar, BooleanVar, IntVar, OptionMenu, Label, Entry, \
     Scale, Radiobutton, Widget
 from spirogen.interface.Tab import Tab
@@ -52,7 +41,7 @@ class PatternTab(Tab):
         # create, set, and grid each parameter:
         layers = Parameter(self, label="layers", from_=10, to=200, row=3)
         layers.set(100)
-        angle1 = Parameter(self, label="rotation angle", from_=-20.0, to=20.0,
+        angle1 = Parameter(self, label="rotation angle", from_=-90.0, to=90.0,
                            resolution=0.1, bigincrement=0.1, row=4)
         npetals = Parameter(self, label="petals", from_=1.0, to=80,
                             resolution=1, tickinterval=9, row=5)
@@ -60,7 +49,9 @@ class PatternTab(Tab):
         innerdepth = Parameter(self, label="Petal Depth", from_=0, to=6,
                                resolution=0.1, bigincrement=0.1, row=6)
         innerdepth.set(1)
-        size = Parameter(self, label="size", from_=1, to=10, row=7)
+        size = Parameter(
+            self, label="size", from_=1, to=10, row=7, resolution=0.1
+        )
         pensize = Parameter(self, label="pen size", from_=1, to=40, row=8)
 
         # add all parameters to the patterntab's master list.
@@ -186,10 +177,12 @@ class PatternTab(Tab):
             self, label="Length", from_=0, to=50, row=12, pady=pady
         )
         x_shift = Parameter(
-            self, label="Shift X", from_=0, to=50, row=14, pady=pady
+            self, label="Shift X", from_=0, to=50, row=14, pady=pady,
+            resolution=0.1, bigincrement=0.1
         )
         y_shift = Parameter(
-            self, label="Shift Y", from_=0, to=50, row=18, pady=pady
+            self, label="Shift Y", from_=0, to=50, row=18, pady=pady,
+            resolution=0.1, bigincrement=0.1
         )
         rotation = Parameter(
             self, label="Rotation", from_=-18.0, to=18.0, row=22, pady=pady
@@ -202,13 +195,15 @@ class PatternTab(Tab):
             self, label="Wavelength", from_=0, to=500, row=30, pady=pady
         )
         wl_shift = Parameter(
-            self, label="Wavelength Shift", from_=0, to=10, row=34, pady=pady
+            self, label="Wavelength Shift", from_=0, to=10, row=34, pady=pady,
+            resolution=0.1, bigincrement=0.1
         )
         amp = Parameter(
             self, label="Ampitude", from_=0, to=500, row=38, pady=pady
         )
         amp_shift = Parameter(
-            self, label="Amplitude Shift", from_=0, to=20, row=42, pady=pady
+            self, label="Amplitude Shift", from_=0, to=20, row=42, pady=pady,
+            resolution=0.1, bigincrement=0.1
         )
         pensize = Parameter(
             self, label="Pen Size", from_=1, to=40, row=46, pady=pady
@@ -364,7 +359,7 @@ class PatternTab(Tab):
             DrawPath(
                 LVL2.sin_spiral(**parameters),
                 colors=colorscheme,
-                pensize=pensize
+                pensize=pensize,
             )
         elif self._patternselection.get() == 'spirals':
             LVL2.spiral_spiral(**parameters, colors=colorscheme)
