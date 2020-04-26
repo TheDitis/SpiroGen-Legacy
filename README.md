@@ -1,5 +1,5 @@
 # SpiroGen
-### A Playground for Making Geometric Patterns
+## A Playground for Making Geometric Patterns
 <br><br/>
 ## To get started:
 #### 1. Download or clone this project
