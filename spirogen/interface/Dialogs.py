@@ -200,7 +200,9 @@ class ListAvailableDialog(Frame):
         self.master.title(f"Loadable {type.capitalize()[:-1]} Names")
         self.pack(padx=30, pady=30)
 
-        files = os.listdir(f'./SpiroGenSettings/{type}')
+        files = os.listdir(
+            f'./spirogen/interface/settings/{type}'
+        )
         lbox = Listbox(self)
         for i, file in enumerate(files):
             lbox.insert(i, file.replace('.json', ''))

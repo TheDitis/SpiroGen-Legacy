@@ -1,0 +1,13 @@
+{
+  "patterntype": "radialangular",
+  "parameters": {
+    "size": 500,
+    "pensize": 1,
+    "angles": [
+      [
+        125.0,
+        5.0
+      ]
+    ]
+  }
+}
