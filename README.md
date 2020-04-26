@@ -1,5 +1,6 @@
 # SpiroGen
 ## A Playground for Making Geometric Patterns
+![alt text](./spirogen/interface/settings/tutorial/images/TutorialWelcome.gif "Logo Title Text 1")
 <br><br/>
 ## To get started:
 #### 1. Download or clone this project
