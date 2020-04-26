@@ -3,7 +3,7 @@
 <br><br/>
 ## To get started:
 #### 1. Download or clone this project
-#### 2. Open a terminal session in the project folder and run the following command: 
+#### 2. Open a terminal session in the project folder (optionally create a virtual environment) and run the following command: 
 ```shell
 pip install -r requirements.txt
 ```
