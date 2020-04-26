@@ -12,4 +12,6 @@
     "ampshift": 0,
     "length": 30,
     "pensize": 1,
-    "cosine": 
+    "cosine": true
+  }
+}

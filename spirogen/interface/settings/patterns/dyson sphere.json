@@ -1,0 +1,18 @@
+{
+  "patterntype": "iterativerotation",
+  "parameters": {
+    "function": "Rectangle",
+    "reps": 77,
+    "xshift": 4.0,
+    "yshift": 0.0,
+    "stretch": 20,
+    "length": 30,
+    "depth": 30,
+    "stretchshift": 0.0,
+    "lenshift": -1.1,
+    "depthshift": -1.1,
+    "cosine": true,
+    "individualrotation": 0.0,
+    "branches": 11
+  }
+}

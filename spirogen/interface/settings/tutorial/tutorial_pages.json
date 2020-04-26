@@ -66,7 +66,7 @@
   },
   {
     "title": "Main Color Controls",
-    "text": "These are the most important color controls.\n\n- Number of stops defines how many colors you specifically define.\n\n - These defined colors are spread evenly across the range of the number of total colors set.\n\n- If you have only two stops, and set your total colors to 100, the pattern will start with the first defined color, and fade with 98 transition colors to the second color defined.\n\n- The shift control allows you to shift the position of the colors you have defined.\n\n- You have a bank of 11 colors total, and when you reduce your number of stops, you only reduce the number of colors you are currently using, and shifting will shift through the entire color set.\n\n- Load Default Colors will load a full-spectrum color set.\n\n- Reverse order reverses the order of the entire color bank, not just the currently selected color stops, so if you reverse, you may have to use the shift control to find your previous position.",
+    "text": "These are the most important color controls.\n\n- Number of stops defines how many colors you define explicitly.\n\n - These user-defined colors are spread evenly across the range of the number of total colors.\n\n- If you have only two stops, and set your total colors to 100, the pattern will start with the first defined color, and fade with 98 transition colors to the second color defined.\n\n- The shift control allows you to shift the position of the colors you have defined.\n\n- You have a bank of 11 colors total, and when you reduce your number of stops, you only reduce the number of colors you are currently using, and shifting will shift through the entire color set.\n\n- Load Default Colors will load a full-spectrum color set.\n\n- Reverse order reverses the order of the entire color bank, not just the currently selected color stops, so if you reverse, you may have to use the shift control to find your previous position.",
     "image": "ColorSchemeTabTut5.png"
   },
   {
@@ -86,7 +86,7 @@
   },
   {
     "title": "Editing Color Swatches Directly",
-    "text": "Clicking on any color swatch will open up an editing dialog, where you can manipulate the individual channels of that color directly.\n\n- The swatches on the left of the dialog can be selected.\n\n- The coluumn of swatches on the left are the colors in your bank\n\n- The swatches in the right column are defaults, so the right and left column will be exactly the same if you haven't edited any of your colors yet.\n\n- You can paste a hex color code into the hex box, and the color will be updated.",
+    "text": "Clicking on any color swatch will open up an editing dialog, where you can manipulate the individual channels of that color directly.\n\n- The swatches on the left of the dialog can be selected.\n\n- The coluumn of swatches on the left are the colors in your bank\n\n- The swatches in the right column are defaults, so the right and left columns will be exactly the same if you haven't edited any of your colors yet.\n\n- You can paste a hex color code into the hex box, and the color will be updated.",
     "image": "ColorEditDialog.gif"
   },
   {

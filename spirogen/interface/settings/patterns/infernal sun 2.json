@@ -1,0 +1,11 @@
+{
+  "patterntype": "layeredflowers",
+  "parameters": {
+    "layers": 140,
+    "npetals": 30,
+    "innerdepth": 2.0,
+    "rotate": 0.7,
+    "sizefactor": 3.0,
+    "pensize": 40
+  }
+}

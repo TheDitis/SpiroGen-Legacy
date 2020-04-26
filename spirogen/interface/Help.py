@@ -41,7 +41,7 @@ class Tutorial(Frame):
         super().__init__(Toplevel())
         self.master.title('Tutorial')
         self.pack(padx=20, pady=20)
-        self.imagepath = './spirogen/interface/settings/tutorial/'
+        self.imagepath = './spirogen/interface/settings/tutorial/images/'
         self.assetpath = ''
 
         p = './spirogen/interface/settings/tutorial/tutorial_pages.json'

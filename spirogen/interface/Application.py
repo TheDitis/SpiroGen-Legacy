@@ -39,12 +39,12 @@ def donothing():
     print('called')
 
 
-class SpiroGenPlayground(ttk.Notebook):
+class Application(ttk.Notebook):
     def __init__(self):
         super().__init__(Tk())  # initialize notebook (Frame that can use tabs)
         menu = TopMenu(self)
         self.master.title('SiroGen')  # name the window
-        self.master.geometry("600x950")  # set default window size
+        self.master.geometry("600x1000")  # set default window size
         # fill the master window
         self.pack(expan=1, padx=10, pady=10, fill='both')
 
@@ -157,16 +157,34 @@ class SpiroGenPlayground(ttk.Notebook):
                     json.dump(current[mode], file, indent=2)
             else:  # if you are saving both colors and pattern together:
                 # generate ids for each:
-                col_id = str(random.randint(100000, 199999))
-                pat_id = str(random.randint(100000, 199999))
+                # col_id = str(random.randint(100000, 199999))
+                # pat_id = str(random.randint(100000, 199999))
+                ids = {'colors': name, 'patterns': name}
+                col_id = name
+                pat_id = name
+                for k in ids:
+                    files = os.listdir(f'{self._settingspath}{k}')
+                    files = [f.replace('.json', '') for f in files]
+                    while ids[k] in files:
+                        if ids[k][-1].isdigit():
+                            nums = []
+                            for i, char in enumerate(ids[k][::-1]):
+                                if char.isdigit():
+                                    nums.append(ids[k].pop(-(i+1)))
+                                else:
+                                    break
+                            num = int(''.join(nums)) + 1
+                            ids[k].append(str(num))
+                        else:
+                            ids[k].append('1')
                 # make an object with id pointers for each tab
-                session = {'colors': col_id, 'patterns': pat_id}
+                # ids = {'colors': col_id, 'patterns': pat_id}
                 sessionpath = f"{self._settingspath}/sessions/{name}.json"  # make path to save session info
                 # TODO: Add checking for id already existing
                 with open(sessionpath, 'w') as file:  # save file pointer dict to file
-                    json.dump(session, file, indent=2)
-                for key in session:  # for each tab (colors and patterns):
-                    path = f'{self._settingspath}/{key}/{session[key]}.json'  # make path with the new id as the file name
+                    json.dump(ids, file, indent=2)
+                for key in ids:  # for each tab (colors and patterns):
+                    path = f'{self._settingspath}/{key}/{ids[key]}.json'  # make path with the new id as the file name
                     with open(path, 'w') as file:  # open the file and write data
                         json.dump(current[key], file, indent=2)
         else:  # if the name already exists:

@@ -13,7 +13,8 @@ class PatternTab(Tab):
 
         super().__init__(master)
         # Setting dropdown menu for selecting pattern type
-        patterns = ['layeredflowers', 'radialangular', 'sinespiral', 'spirals']
+        patterns = ['layeredflowers', 'radialangular', 'sinespiral', 'spirals',
+                    'iterativerotation']
         self._patternselection = StringVar(self)
         self._patternselection.trace('w', self._setpattern)
         self._patternselection.set(patterns[0])
@@ -36,6 +37,8 @@ class PatternTab(Tab):
             self.set_sin_spiral()
         elif patterntype == 'spirals':
             self.set_spirals()
+        elif patterntype == 'iterativerotation':
+            self.set_iterative_rotation()
 
     def _set_layered_flowers(self):
         # create, set, and grid each parameter:
@@ -267,6 +270,89 @@ class PatternTab(Tab):
             'centerdist': centerdist
         }
 
+    def set_iterative_rotation(self):
+        pady = 0
+        shapeoptions = ['Wave', 'Rectangle', 'Circle']
+        shape = StringVar()
+        shapemenulabel = Label(self, text="Shape")
+        shapemenu = OptionMenu(self, shape, *shapeoptions)
+        shapemenulabel.grid(column=10, row=23, columnspan=200)
+        shapemenu.grid(column=10, row=25, columnspan=200)
+        branches = Parameter(
+            self, label="Number of Branches", from_=2, to=60, pady=pady, row=27
+        )
+        repetitions = Parameter(
+            self, label='Repetitions', from_=4, to=80, pady=pady, row=30
+        )
+        shiftx = Parameter(
+            self, label='Shift X', from_=-10, to=10, resolution=0.1, pady=pady,
+            row=35
+        )
+        shifty = Parameter(
+            self, label='Shift Y', from_=-10, to=10, resolution=0.1, pady=pady,
+            row=40
+        )
+        rotation = Parameter(
+            self, label='Rotation', from_=-30, to=30, resolution=0.1, pady=pady,
+            row=42
+        )
+        stretch = Parameter(
+            self, label='Stretch (Wave Only)', from_=0, to=80, pady=pady, row=45
+        )
+        length = Parameter(
+            self, label='Length/Width', from_=1, to=150, pady=pady, row=50
+        )
+        depth = Parameter(
+            self, label='Amplitude/Height', from_=0, to=150, pady=pady, row=55
+        )
+        stretchshift = Parameter(
+            self, label="Stretch Shift (Wave Only)", from_=-3, to=3, pady=pady,
+            row=60, resolution=0.1
+        )
+        lenshift = Parameter(
+            self, label="Length/Width Shift", from_=-3, to=3, pady=pady, row=65,
+            resolution=0.1
+        )
+        depthshift = Parameter(
+            self, label="Amplitude/Height Shift", from_=-3, to=3, pady=pady,
+            row=70, resolution=0.1
+        )
+        distshift = Parameter(
+            self, label="Distance Shift", from_=0, to=0.5, pady=pady, row=75,
+            resolution=0.01
+        )
+        cosine = BooleanVar()
+        sinebtn = Radiobutton(
+            self, text='Sine', width=5, indicatoron=False, value=False,
+            variable=cosine
+        )
+        cosinebtn = Radiobutton(
+            self, text='Cosine', width=5, indicatoron=False, value=True,
+            variable=cosine
+        )
+        sinebtn.grid(row=80, column=50, columnspan=100, pady=20)
+        cosinebtn.grid(row=80, column=180, columnspan=100)
+
+        shape.set('Rectangle')
+        repetitions.set(30)
+        rotation.set(2)
+        stretch.set(20)
+        length.set(30)
+        depth.set(30)
+        branches.set(8)
+
+        self._progparams['shapemenu'] = shapemenu
+        self._progparams['shapemenulabel'] = shapemenulabel
+        self._progparams['cosinebuttons'] = [cosinebtn, sinebtn]
+
+        self._parameters = {
+            "function": shape, "reps": repetitions, "xshift": shiftx,
+            "yshift": shifty, 'stretch': stretch, "length": length,
+            "depth": depth, "stretchshift": stretchshift, "lenshift": lenshift,
+            "depthshift": depthshift, "cosine": cosine, "distshift": distshift,
+            "individualrotation": rotation, "branches": branches
+        }
+
     def clear(self):
         #  This method is used to remove all Widgets from the frame when
         #  switching pattern types
@@ -326,7 +412,7 @@ class PatternTab(Tab):
                 curvebox.set(angles[i][1])  # set the curve to the retrieeved value
         for k in params:  # for each key in the parameter dictionary:
             if k in self._parameters:  # if that parameter already exists in the master parameter dictionary:
-                if not isinstance(self._parameters[k], list):
+                if not isinstance(self._parameters[k], (list, bool)):
                     self._parameters[k].set(params[k])  # set that parameter to the retrieved value for that param
             else:  # if that parameter isn't already in the list:
                 self._parameters[k] = params[k]  # add it
@@ -365,5 +451,10 @@ class PatternTab(Tab):
             )
         elif self._patternselection.get() == 'spirals':
             LVL2.spiral_spiral(**parameters, colors=colorscheme)
+        elif self._patternselection.get() == 'iterativerotation':
+            LVL2.random_iterative_rotation(
+                **parameters, colors=colorscheme, rotationcenter=(0, 0)
+            )
+        #     LVL2.iterative_rotation(**parameters, colors=colorscheme)
 
         spiro.wait()  # This keeps the pattern window from closing as soon as it's done drawing

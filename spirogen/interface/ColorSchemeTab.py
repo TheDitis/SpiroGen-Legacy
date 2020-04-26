@@ -70,7 +70,7 @@ class ColorSchemeTab(Tab):
             self, label="Number of Stops", from_=1, to=11,
             command=self.update_colorstops, row=10
         )  # this one sets the number of colors you define specifically
-        self._colorstops.set(5)
+        self._colorstops.set(11)
 
         settodefaultcolors = Button(
             self, text='Load Default Colors',

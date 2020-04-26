@@ -1,9 +1,9 @@
 # from interface.SpiroGenPlayground import SpiroGenPlayground
-from spirogen.interface import SpiroGenPlayground
+from spirogen.interface import Application
 
 
 def main():
-    SpiroGenPlayground()
+    Application()
 
 
 if __name__ == "__main__":

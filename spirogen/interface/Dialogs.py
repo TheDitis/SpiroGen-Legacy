@@ -203,9 +203,13 @@ class ListAvailableDialog(Frame):
         files = os.listdir(
             f'./spirogen/interface/settings/{type}'
         )
+        # files = [f.strip('.json') for f in files]
+        # files = list(filter(lambda f: not all([i.isdigit() for i in f]), files))
         lbox = Listbox(self)
         for i, file in enumerate(files):
-            lbox.insert(i, file.replace('.json', ''))
+            name = file.replace('.json', '')
+            if not all(map(lambda x: x.isdigit(), name)):
+                lbox.insert(i, name)
         lbox.pack(fill="both")
         lbox.bind('<<ListboxSelect>>', self.get_value)
 

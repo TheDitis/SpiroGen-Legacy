@@ -752,9 +752,11 @@ class Wave(Pattern):
             print('Only 1 color can be used. Using first in list')
         turtle.color(color)
         if length < 0:
-            self.xlist = np.linspace(length, abs(length) + (1 / (abs(length) * 25)), abs(length) * 25)
+            self.xlist = np.linspace(round(length), round(abs(length) + (1 / (abs(length) * 25))), round(abs(length) * 25))
         else:
-            self.xlist = np.linspace(-length, round(length + (1 / (length * 25))), round(length * 25))
+            if (length * 25) == 0:
+                length += 0.1
+            self.xlist = np.linspace(round(-length), round(length + (1 / (length * 25))), round(length * 25))
         if cosin is False:
             self.ylist = [sin(x) for x in self.xlist]
         else:
@@ -835,8 +837,11 @@ class Circle(Pattern):
         turtle.color(color)
         radius = (height / 2)
         xpos, ypos = position[0], position[1]
+        xpos += width / 2
+        ypos -= height / 2
+
         self.plist = self.create_circle(radius, xpos, ypos)
-        super().__init__(self.plist, color, pensize, position)
+        super().__init__(self.plist, color, pensize, position=[xpos, ypos])
         self.list = Transform(self.plist).xscale(width / 2)
         self.list = Transform(self.list).yscale(height / 2)
 
@@ -855,7 +860,7 @@ class Circle(Pattern):
             turtle.pendown()
         turtle.goto((xpos - radius, ypos))
         turtle.begin_poly()
-        turtle.circle(radius)
+        turtle.circle(radius, steps=100)
         turtle.end_poly()
         circle = [tuple(i) for i in turtle.get_poly()]
         return circle
@@ -1645,9 +1650,16 @@ class LVL2:
             yloc += yshift
 
     @staticmethod
-    def iterative_rotation(function=Wave, reps=30, xshift=0, yshift=0, stretch=20, length=30, depth=30,
-                           stretchshift=0, lenshift=0, depthshift=0, shift=False, colors='white', pensize=1,
-                           individualrotation=2, rotationcenter=(0, 0), position=(0, 0), draworig=False, branches=10):
+    def iterative_rotation(
+            function=Wave, reps=30, xshift=0, yshift=0, stretch=20, length=30,
+            depth=30, stretchshift=0, lenshift=0, depthshift=0, cosine=False,
+            colors='white', pensize=1, individualrotation=2, distshift=0,
+            rotationcenter=(0, 0), position=(0, 0), draworig=False, branches=10
+    ):
+        funcmap = {'Wave': Wave, 'Rectangle': Rectangle, 'Circle': Circle}
+        flippedfuncmap = {v: k for k, v in funcmap.items()}
+        if isinstance(function, str):
+            function = funcmap[function]
         funclist = []
         xpos, ypos = position[0], position[1]
         lenshift = lenshift
@@ -1660,9 +1672,17 @@ class LVL2:
         for i in range(reps):
             colind = i % len(colors)
             col = colors[colind]
-            func1 = function(stretch2, depth2, pensize, (xpos, ypos), length2, col, shift)
+            if flippedfuncmap[function] == "Wave":
+                func1 = function(stretch2, depth2, pensize, (xpos, ypos),
+                                 length2, col, cosine)
+            elif flippedfuncmap[function] in ["Rectangle", "Circle"]:
+                func1 = function(length2, depth2, pensize, (xpos, ypos), col)
+
+            xshift *= 1 + distshift
+            yshift *= 1 + distshift
             xpos += xshift
             ypos += yshift
+
             length2 += lenshift
             depth2 += depthshift
             stretch2 += stretchshift
@@ -1854,11 +1874,15 @@ class LVL2:
         #     return funclist2
 
     @staticmethod
-    def random_iterative_rotation(function=None, reps=None, xshift=None, yshift=None, stretch=None, length=None, depth=None,
-                           stretchshift=None, lenshift=None, depthshift=None, shift=False, colors='white', pensize=1,
-                           individualrotation=None, rotationcenter=(None, None), position=(0, 0), draworig=False, branches=None):
+    def random_iterative_rotation(
+            function=None, reps=None, xshift=None, yshift=None, stretch=None,
+            length=None, depth=None, stretchshift=None, lenshift=None,
+            depthshift=None, cosine=False, colors='white', pensize=1,
+            individualrotation=None, rotationcenter=(None, None),
+            position=(0, 0), draworig=False, branches=None, distshift=0):
 
         report = ""
+        reportrotcenter = False
         if function is None:
             flist = [Wave, Rectangle, Circle]
             funcindex = int(np.random.randint(0, len(flist) - 1, 1))
@@ -1906,13 +1930,19 @@ class LVL2:
         if branches is None:
             branches = int(np.random.randint(1, 31, 1))
             report += ", branches={}".format(branches)
-        print(report)
+        # print(report)
 
-        colors2 = ColorScheme(colors, reps)
+        if isinstance(colors, (str, list)):
+            colors2 = ColorScheme(colors, reps)
+        else:
+            colors2 = colors
 
-        LVL2.iterative_rotation(function, reps, xshift, yshift, stretch, length, depth,
-                                stretchshift, lenshift, depthshift, shift, colors2, pensize,
-                                individualrotation, rotationcenter, position, draworig, branches)
+        LVL2.iterative_rotation(
+            function, reps, xshift, yshift, stretch, length, depth,
+            stretchshift, lenshift, depthshift, cosine, colors2, pensize,
+            individualrotation, distshift, rotationcenter, position, draworig,
+            branches
+        )
 
 
 def closest_point(node, nodes):
