@@ -1,6 +1,7 @@
 # from interface.SpiroGenPlayground import SpiroGenPlayground
 from spirogen.interface import SpiroGenPlayground
 
+
 def main():
     SpiroGenPlayground()
 

@@ -54,7 +54,7 @@ class SpiroGenPlayground(ttk.Notebook):
         self.add(self._patterntab, text="Pattern")
         self.add(self._colorschemetab, text="Color Scheme")
 
-        self._settingspath = './spirogen/interface/SpiroGenSettings/'
+        self._settingspath = './spirogen/interface/settings/'
 
         # create a frame for the load, save, and run buttons
         button_area = Frame(self)

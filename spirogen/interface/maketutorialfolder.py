@@ -114,7 +114,7 @@ def main():
         obj['text'] = pageinfo[1]
         obj['image'] = imagelist[i]
         pagelist.append(obj)
-    with open('SpiroGenSettings/tutorial/tutorial_pages.json', 'w') as file:
+    with open('settings/tutorial/tutorial_pages.json', 'w') as file:
         json.dump(pagelist, file, indent=2)
 
 

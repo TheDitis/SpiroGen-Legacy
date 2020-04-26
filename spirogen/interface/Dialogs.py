@@ -201,7 +201,7 @@ class ListAvailableDialog(Frame):
         self.pack(padx=30, pady=30)
 
         files = os.listdir(
-            f'./spirogen/interface/SpiroGenSettings/{type}'
+            f'./spirogen/interface/settings/{type}'
         )
         lbox = Listbox(self)
         for i, file in enumerate(files):

@@ -41,10 +41,10 @@ class Tutorial(Frame):
         super().__init__(Toplevel())
         self.master.title('Tutorial')
         self.pack(padx=20, pady=20)
-        self.imagepath = './spirogen/interface/SpiroGenSettings/tutorial/'
+        self.imagepath = './spirogen/interface/settings/tutorial/'
         self.assetpath = ''
 
-        p = './spirogen/interface/SpiroGenSettings/tutorial/tutorial_pages.json'
+        p = './spirogen/interface/settings/tutorial/tutorial_pages.json'
         with open(p, 'r') as file:
             self.tutdata = json.load(file)
         self.h1 = Font(family='TkDefaultFont', size=40,
