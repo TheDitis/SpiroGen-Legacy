@@ -11,6 +11,5 @@ pip install -r requirements.txt
 #### 3. Run SpiroGen.py
 ### 4. Have fun!!
 
-<br><br/>
 
-##### The tutorial will open on first launch, but if you need to find it again, it will be in the help section of the menu.
+#### The tutorial will open on first launch, but if you need to find it again, it will be in the help section of the menu.
