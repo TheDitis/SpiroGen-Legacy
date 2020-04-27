@@ -90,6 +90,11 @@
     "image": "ColorEditDialog.gif"
   },
   {
+    "title": "Using Effects",
+    "text": "Clicking on an effect will open a dialog box.\n\n- Ramp Lightness and Shift Lightness both have an amount parameter. This etermines how much to shift the RGB values, and it should be between -255 and 255.\n\n- These effects are not reversable, so save your colors before using if you are attached to them!\n\n- Effects have a ceiling effect. Values will max at 255 and hit bottom at 0.\n\n- Ramp lightness takes a direction (left or right) which is the side of the color bank that will be affected more heavily. GoTo % is the percentage of the color bank that you want to adjust.\n\n- Ramp lightness ramps through the entire color bank, not your current selectiion, so make sure that you use the color shift and reverse functions to get the desired start or end point of your fade is on one of the edges.",
+    "image": "EffectsTut.gif"
+  },
+  {
     "title": "Have Fun!",
     "text": "That's it for the tutorial! Enjoy the playground!\n\nThis tutorial will no longer open upon launch, but you can always find it in the Help section of the menu bar.",
     "image": "TutorialWelcome.gif"

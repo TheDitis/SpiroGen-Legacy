@@ -9,7 +9,7 @@ Input: master Notebook
 Output:
     save method outputs a dictionary to be saved as json
 """
-from tkinter import StringVar, Label, Button, Entry, Frame
+from tkinter import StringVar, Label, Button, Entry, IntVar
 from copy import deepcopy
 from spirogen.interface.Tab import Tab
 from spirogen.interface.Parameter import Parameter
@@ -17,6 +17,10 @@ from spirogen.spirogen import ColorScheme
 from spirogen.interface.Dialogs import ShiftLightnessDialog, \
     RampLightnessDialog, ColorSwatchDialog
 from spirogen.interface.ColorSwatch import ColorSwatch
+# from colorsys import hsv_to_rgb, rgb_to_hsv
+from matplotlib.colors import hsv_to_rgb, rgb_to_hsv
+from functools import partial
+from time import sleep
 
 
 class ColorSchemeTab(Tab):
@@ -29,6 +33,7 @@ class ColorSchemeTab(Tab):
             'g': [0, 150, 255, 255, 255, 255, 145, 3, 3, 3, 0],
             'b': [0, 0, 0, 3, 3, 240, 255, 255, 255, 255, 0]
         }
+        self.n_updates = 0
         # self.backgroundcolor = self.rgb_tk((0, 0, 0))
         self._resetcolors = True  # this tells the color boxes to fill themselves with the defaults
         self._colordict = deepcopy(self._default)  # this is master list of colors that you use and edit. Starts as default
@@ -87,11 +92,21 @@ class ColorSchemeTab(Tab):
         # is where the color boxes will go.
         self._spacedarea.grid(row=20, column=0, columnspan=800)
 
+        self._colorshiftvar = IntVar()
         self._colorshift = Parameter(
             self, label="Shift Position", from_=-6, to=6, row=25,
-            command=self.shift_color, bigincrement=1
+            command=self.shift_color, bigincrement=1,
+            variable=self._colorshiftvar
         )  # this control shifts the position of the colors in the dictionary
-        self.previousshift = 0  # this is for determining the interval of shift (-1 or 1)
+        self._previousshift = 0  # this is for determining the interval of shift (-1 or 1)
+
+        self._hueshiftvar = IntVar()  # using a variable with this one so that I can reset hue shift to zero on loading without triggering the callback.
+        self._hueshift = Parameter(
+            self, label="Shift Hue", from_=-127, to=127, row=27,
+            command=self.shift_hue, bigincrement=2, resolution=2,
+            variable=self._hueshiftvar
+        )
+        self._previoushue = 0
 
         # label the effects section of the tab
         effectslabel = Label(self, text="Effects:", font=self.h2)
@@ -105,7 +120,8 @@ class ColorSchemeTab(Tab):
             command=lambda: ShiftLightnessDialog(self.shift_lightness)
         )
         ramplightnessbutton = Button(
-            self, text="Ramp Lightness", command=self.open_ramp_lightness_dialog
+            self, text="Ramp Lightness",
+            command=lambda: RampLightnessDialog(self.ramp_lightness)
         )
 
         shiftlightnessbutton.grid(
@@ -113,6 +129,15 @@ class ColorSchemeTab(Tab):
         )
         ramplightnessbutton.grid(row=30, column=210, columnspan=200)
 
+
+    # @property
+    # def default_arr(self):
+    #     if self._colordict_arr:
+    #         if self._cached_colordict == self._colordict:
+    #             return self._colordict_arr
+    #     self._cached_colordict = deepcopy(self._colordict)
+    #     self._colordict_arr = np.array(self._colordict.values())
+    #     return self._colordict_arr
 
     @property
     def colorscheme(self):
@@ -138,10 +163,42 @@ class ColorSchemeTab(Tab):
         # getter for colordict
         return self._colordict
 
+    @property
+    def hsv_colordict(self):
+        hsv_dict = {'h': [], 's': [], 'v': []}
+        for i in range(len(self.colordict['r'])):
+            rgb = [self.colordict[k][i] / 255 for k in self.colordict.keys()]
+            hsv = [*rgb_to_hsv(rgb)]
+
+            # print('hsv:', hsv)
+            for j, k in enumerate(hsv_dict):
+                hsv_dict[k].append(hsv[j])
+        return hsv_dict
+
     @colordict.setter
     def colordict(self, val):
-        # setter for colordict
         self._colordict = val
+
+    def colordict_from_hsv(self, hsv_dict):
+        colordict = {'r': [], 'g': [], 'b': []}
+        for i in range(len(hsv_dict['h'])):
+            hsv = [hsv_dict[k][i] for k in hsv_dict]
+            rgb = [int(round(col * 255)) for col in hsv_to_rgb(hsv)]
+            # print('rgb', rgb)
+            for j, k in enumerate(colordict):
+                colordict[k].append(rgb[j])
+        return colordict
+
+    def shift_hue(self, *args):
+        shift = self._hueshift.get() # hue is between the range of 0 and 1
+        prevshift = self._previoushue
+        shift = (prevshift - shift) / 255
+        hsv_dict = self.hsv_colordict
+        hsv_dict['h'] = [(val + shift) % 1 for val in hsv_dict['h']]
+        rgb = self.colordict_from_hsv(hsv_dict)
+        self.colordict = rgb
+        self.update_color_boxes()
+        self._previoushue = self._hueshift.get()
 
     def setup_background_color_area(self):
         # creates and places the controls for the backgorund color section
@@ -203,10 +260,11 @@ class ColorSchemeTab(Tab):
 
     def reset_colors_to_default(self):
         # this method is run by the reset colors button, and is self explanitory
+        self.update_color_boxes()
         self._resetcolors = True
-        self.colordict = deepcopy(self._default)
-        self.colordict = deepcopy(self._default)
         self._colorshift.set(0)
+        self._colorshift.set(0)
+        self.colordict = deepcopy(self._default)
         self.update_color_boxes()
 
     def update_colorstops(self, *args):
@@ -214,10 +272,10 @@ class ColorSchemeTab(Tab):
         self.make_color_boxes()
 
     def shift_color(self, *args):
-        colordict = deepcopy(self.colordict)
+        colordict = {k: self.colordict[k].copy() for k in self.colordict}
         amt = self._colorshift.get()
-        prev = self.previousshift
-        self.previousshift = amt
+        prev = self._previousshift
+        self._previousshift = amt
         if amt < prev:
             interval = -1
         else:
@@ -274,7 +332,8 @@ class ColorSchemeTab(Tab):
 
     def make_color_boxes(self):
         """
-        This method
+        This method creates the rgb input boxes and swatches based on the numer
+        of stops set by the user.
         Returns:
 
         """
@@ -312,19 +371,19 @@ class ColorSchemeTab(Tab):
 
             red = StringVar()
             red.trace(
-                'w', lambda *x: self.update_color_dict(x, index=i, key='r')
+                'w', partial(self.update_color_dict, index=i, key='r')
             )
             redbox = Entry(self._spacedarea, width=3, textvariable=red)
 
             green = StringVar()
             green.trace(
-                'w', lambda *x: self.update_color_dict(x, index=i, key='g')
+                'w', partial(self.update_color_dict, index=i, key='g')
             )
             greenbox = Entry(self._spacedarea, width=3, textvariable=green)
 
             blue = StringVar()
             blue.trace(
-                'w', lambda *x: self.update_color_dict(x, index=i, key='b')
+                'w', partial(self.update_color_dict, index=i, key='b')
             )
             bluebox = Entry(self._spacedarea, width=3, textvariable=blue)
 
@@ -358,24 +417,40 @@ class ColorSchemeTab(Tab):
             # self.progparams['curveboxes'].append([curvebox, label2])
 
     def update_color_dict(self, *args, index, key):
+        # print(self.n_updates)
+        # self.n_updates += 1
         colparams = self._progparams['colorparams']
         values = [i['vals'] for i in colparams]
         examples = [i['example'] for i in colparams]
-        newcols = deepcopy(self.colordict)
-        for i in range(len(values)):  # for index of values (tk StringVar objects):
-            group = values[i]  # group =  {'r': rVar, 'g': gVar, 'b': bVar)
+        # newcols = deepcopy(self.colordict)
+        newcols = {k: self.colordict[k].copy() for k in self.colordict}
+        if index < len(values):
+            group = values[index]
             rgb = []
             for key in group:  # for 'r', 'g', and 'b':
-                shift = self._colorshift.get()  # get the value of the shift parameter
-                ind = (i - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
+                ind = (index - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
                 strval = group[key].get()
                 if strval != '':
                     val = round(float(strval))
                     self.colordict[key][ind] = val
-                    newcols[key][i] = val
+                    newcols[key][index] = val
                     rgb.append(val)
             if len(rgb) == 3:
-                examples[i].updatecolor(self.rgb_tk(rgb))
+                examples[index].updatecolor(self.rgb_tk(rgb))
+        # else:
+        #     for i in range(len(values)):  # for index of values (tk StringVar objects):
+        #         group = values[i]  # group =  {'r': rVar, 'g': gVar, 'b': bVar)
+        #         rgb = []
+        #         for key in group:  # for 'r', 'g', and 'b':
+        #             ind = (i - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
+        #             strval = group[key].get()
+        #             if strval != '':
+        #                 val = round(float(strval))
+        #                 self.colordict[key][ind] = val
+        #                 newcols[key][i] = val
+        #                 rgb.append(val)
+        #         if len(rgb) == 3:
+        #             examples[i].updatecolor(self.rgb_tk(rgb))
         self.colordict = newcols
 
     def update_color_boxes(self):
@@ -387,17 +462,13 @@ class ColorSchemeTab(Tab):
                 val = self.colordict[key][i]
                 rgb.append(val)
                 group['vals'][key].set(val)
-        self.make_color_boxes()
+        # self.make_color_boxes()
 
     def open_editor(self, targetswatch):
         ColorSwatchDialog(
             targetswatch, curcolors=self.colordict,
             defaultcolors=self._default
         )
-
-    def open_ramp_lightness_dialog(self):
-        dialog = RampLightnessDialog(self.ramp_lightness)
-        # dialog
 
     def shift_lightness(self, amount):
         scheme = ColorScheme(self.colordict, self._colorstops.get())
@@ -422,6 +493,10 @@ class ColorSchemeTab(Tab):
         return output
 
     def load(self, data):
+        self._hueshiftvar.set(0)
+        self._previoushue = 0
+        self._previousshift = 0
+        self._colorshiftvar.set(0)
         for k in data["background"]:
             self._bg_vars[k].set(data["background"][k])
         self._totalcolors.set(int(data["totalcolors"]))

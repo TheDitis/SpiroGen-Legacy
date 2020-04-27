@@ -36,24 +36,24 @@ class HelpIndex(Frame):
 class Tutorial(Frame):
     """
     This is a simple walkthrough of the functionality of the program.
+    It simply displays images and text, page by page.
     """
     def __init__(self):
         super().__init__(Toplevel())
         self.master.title('Tutorial')
         self.pack(padx=20, pady=20)
-        self.imagepath = './spirogen/interface/settings/tutorial/images/'
+        self._imagepath = './spirogen/interface/settings/tutorial/images/'
         self.assetpath = ''
 
         p = './spirogen/interface/settings/tutorial/tutorial_pages.json'
         with open(p, 'r') as file:
             self.tutdata = json.load(file)
-        self.h1 = Font(family='TkDefaultFont', size=40,
-                       weight='bold')  # Big heading font
+        self.h1 = Font(family='TkDefaultFont', size=40, weight='bold')  # Big heading font
         self.h2 = Font(family='TkDefaultFont', size=20, weight='bold')
-        self.currentindex = -1
-        self.image = None
-        self.titletext = None
-        self.text = None
+        self._currentindex = -1
+        self._image = None
+        self._titletext = None
+        self._text = None
         self.next()
         nextbtn = Button(
             self, text="Next", command=self.next, bg='blue', height=4, width=10
@@ -66,95 +66,90 @@ class Tutorial(Frame):
 
     @property
     def path(self):
-        return self.imagepath + self.tutdata[self.currentindex]['image']
+        return self._imagepath + self.tutdata[self._currentindex]['image']
 
     @property
     def indexinrange(self):
-        return 0 <= self.currentindex < len(self.tutdata)
+        return 0 <= self._currentindex < len(self.tutdata)
 
     def next(self):
-        self.currentindex += 1
+        # goes to the next page
+        self._currentindex += 1
         if self.indexinrange:
             self.load_page()
         else:
             self.master.destroy()
 
     def back(self):
-        if not self.currentindex == 0:
-            self.currentindex -= 1
+        # goes to the previous page
+        if not self._currentindex == 0:
+            self._currentindex -= 1
             self.load_page()
 
     def load_page(self):
         image = Image.open(self.path)
-        currentpage = self.tutdata[self.currentindex]
+        # get the text and image data from the current page:
+        currentpage = self.tutdata[self._currentindex]
         # image = resize_img(image)
         photo = ImageTk.PhotoImage(image)
-        if self.image:
-            self.image.grid_forget()
-        if self.text:
-            self.text.grid_forget()
-        if self.titletext:
-            self.titletext.grid_forget()
+        # cleanup the last page shown:
+        if self._image:
+            self._image.grid_forget()
+        if self._text:
+            self._text.grid_forget()
+        if self._titletext:
+            self._titletext.grid_forget()
+
+        # if the image is a gif:
         if '.gif' in self.path:
-            self.image = ImageLabel(self, borderwidth=2, relief="solid")
+            self._image = GifPlayer(self, borderwidth=2, relief="solid")
             # self.image.image = photo  # keep a reference!
-            self.image.grid(row=0, column=0, columnspan=205, rowspan=205)
-            if self.currentindex == 0:
-                size = 900
-            else:
-                size = 400
-            self.image.load(self.path, size)
+            self._image.grid(row=0, column=0, columnspan=205, rowspan=205)
+            self._image.load(self.path)
+        # if it's just a still image:
         else:
-            self.image = Label(self, image=photo, borderwidth=2, relief="solid")
-            self.image.image = photo  # keep a reference!
-            self.image.grid(row=0, column=0, columnspan=205, rowspan=205)
+            self._image = Label(self, image=photo, borderwidth=2, relief="solid")
+            self._image.image = photo  # keep a reference!
+            self._image.grid(row=0, column=0, columnspan=205, rowspan=205)
+        # grab the text:
         title = currentpage['title']
         text = currentpage['text']
+        self._titletext = Message(
+            self, text=title, font=self.h1, width=500, justify='center'
+        )
+        self._text = Message(
+            self, text=text, font=self.h2, width=500, justify='center'
+        )
+        # if this is the first or last page, we want the text below the image:
         if "Welcome" in self.path:
-            self.titletext = Message(
-                self, text=title, font=self.h1, width=500, justify='center'
-            )
-            self.text = Message(
-                self, text=text, font=self.h2, width=500, justify='center'
-            )
-            self.titletext.grid(row=210, column=0, columnspan=205, pady=20)
-            self.text.grid(row=215, column=0, columnspan=205, pady=20)
+
+            self._titletext.grid(row=210, column=0, columnspan=205, pady=20)
+            self._text.grid(row=215, column=0, columnspan=205, pady=20)
+        # otherwise, we want it to the side:
         else:
-            self.titletext = Message(
-                self, text=title, font=self.h1, width=500, justify='center'
-            )
-            self.text = Message(
-                self, text=text, font=self.h2, width=500, justify='center'
-            )
-            self.titletext.grid(
+            self._titletext.grid(
                 row=5, column=300, columnspan=205, pady=60, padx=20
             )
-            self.text.grid(row=10, column=300, columnspan=205, pady=60, padx=20)
+            self._text.grid(row=10, column=300, columnspan=205, pady=60, padx=20)
 
     def goto(self, page):
-        self.currentindex = page - 1
+        self._currentindex = page - 1
         self.next()
 
 
-class HelpPatternTab(Frame):
-    def __init__(self):
-        super().__init__(Toplevel())
-        self.pack(padx=20, pady=20)
-
-
-class ImageLabel(Label):
+class GifPlayer(Label):
     """a label used to display tutorial gifs"""
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.delay = 100
-        self.loc = 0
-        self.frames = []
+        self._delay = 100
+        self._loc = 0
+        self._frames = []
 
-    def load(self, im, size):
+    def load(self, im):
         im = Image.open(im)
         try:
             for i in count(1):
-                self.frames.append(
+                self._frames.append(
                     ImageTk.PhotoImage(im.copy())
                 )
                 im.seek(i)
@@ -162,31 +157,22 @@ class ImageLabel(Label):
             pass
 
         try:
-            self.delay = im.info['duration']
+            self._delay = im.info['duration']
         except:
-            self.delay = 100
+            self._delay = 100
 
-        if len(self.frames) == 1:
-            self.config(image=self.frames[0])
+        if len(self._frames) == 1:
+            self.config(image=self._frames[0])
         else:
             self.next_frame()
 
     def unload(self):
         self.config(image=None)
-        self.frames = None
+        self._frames = None
 
     def next_frame(self):
-        if self.frames:
-            self.loc += 1
-            self.loc %= len(self.frames)
-            self.config(image=self.frames[self.loc])
-            self.after(self.delay, self.next_frame)
-
-
-def resize_img(img, basewidth=None):
-    if basewidth is None:
-        basewidth = 400
-    wpercent = (basewidth / float(img.size[0]))
-    hsize = int((float(img.size[1]) * float(wpercent)))
-    img = img.resize((basewidth, hsize), Image.ANTIALIAS)
-    return img
+        if self._frames:
+            self._loc += 1
+            self._loc %= len(self._frames)
+            self.config(image=self._frames[self._loc])
+            self.after(self._delay, self.next_frame)

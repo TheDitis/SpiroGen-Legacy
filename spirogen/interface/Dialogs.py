@@ -13,14 +13,21 @@ Output:
     They all run the function that they are given when submit is clicked.
 """
 from tkinter import Frame, Toplevel, StringVar, Label, Entry, Button, IntVar, \
-    Radiobutton, Listbox, Scale
+    Radiobutton, Listbox
 from spirogen.interface.Parameter import Parameter
 import os
 import re
-from matplotlib.colors import rgb2hex, hex2color, to_rgb
+from matplotlib.colors import rgb2hex, hex2color
 
 
 class ShiftLightnessDialog(Frame):
+    """
+    This is the dialog for the lightness shift effect. It has just a single
+    control.
+    Args:
+        func: the shift lightness function, which is run with the settings
+            defined in the dialog when the apply button is clicked.
+    """
     def __init__(self, func):
         super().__init__(Toplevel())
         self.master.title('Shift Lightness')
@@ -51,6 +58,13 @@ class ShiftLightnessDialog(Frame):
 
 
 class RampLightnessDialog(Frame):
+    """
+    This is the dialog for the lightness ramp effect. It has just a few
+    controls
+    Args:
+        func: the ramp lightness function, which is run with the settings
+            defined in the dialog when the apply button is clicked.
+    """
     def __init__(self, func):
         super().__init__(Toplevel())
         self.master.title('Ramp Lightness')
@@ -65,7 +79,7 @@ class RampLightnessDialog(Frame):
         self._direction.set(0)
         self._goto.set(50)
 
-        # ramplightlabel = Label(self.rl_window, text='Ramp Lightness:')
+        # creating all of the controls and labels
         amtlabel = Label(self, text='Amount:')
         amtbox = Entry(self, width=5, textvariable=self._amount)
         directionlabel = Label(self, text='Direction:')
@@ -81,6 +95,7 @@ class RampLightnessDialog(Frame):
         gotobox = Entry(self, width=5, textvariable=self._goto)
         applybtn = Button(self, text="Apply", command=self.apply)
 
+        # and adding all controls and labels to the page
         amtlabel.grid(row=38, column=3, columnspan=120, pady=10)
         amtbox.grid(row=38, column=125, columnspan=80)
         directionlabel.grid(row=42, column=3, columnspan=90, pady=10)
@@ -103,11 +118,21 @@ class RampLightnessDialog(Frame):
 
 
 class SaveDialog(Frame):
+    """
+    This is a simple dialog for saving settings. It has radiobuttons for
+    selecting load type ('sessions', 'patterns', 'colors'), an entry box for the
+    name you want to set for the current setting, and a button to save the
+    current setting under the name in the entry box.
+    Args:
+         func: the function passed by Application to run when the load button
+            is pressed.
+    """
     def __init__(self, func):
         super().__init__(Toplevel())
         self.master.title("Save")
         self.pack(padx=30, pady=30)
 
+        # making controls to set the mode
         mode = StringVar()
         mode.set('sessions')
         session = Radiobutton(
@@ -123,31 +148,41 @@ class SaveDialog(Frame):
             variable=mode
         )
 
+        # creating the entry box
         name = StringVar()
         namelabel = Label(self, text="Name:")
         namebox = Entry(self, textvariable=name)
 
+        # making the button that runs the save function
         savebtn = Button(
             self, text="Save", command=lambda: func(mode.get(), name.get())
         )
 
+        # adding everything to the page
         session.grid(row=10, column=9, columnspan=100)
         pattern.grid(row=10, column=120, columnspan=100, padx=20)
         colors.grid(row=10, column=230, columnspan=100)
-
         namelabel.grid(row=13, column=37, columnspan=100, pady=(20, 0))
         namebox.grid(row=15, column=10, columnspan=300, pady=(0, 20))
         savebtn.grid(row=20, column=250, columnspan=50, sticky='se')
 
 
 class LoadDialog(Frame):
+    """
+    This is a simple dialog for loading settings. It has radiobuttons for
+    selecting load type ('sessions', 'patterns', 'colors'), an entry box
+    for the name of the desired setting, a button to list and select available
+    setting names, and a button to load whatever is in the entry box.
+    Args:
+         func: the function passed by Application to run when the load button
+            is pressed.
+    """
     def __init__(self, func):
         super().__init__(Toplevel())
         self.master.title("Load")
         self.pack(padx=30, pady=30)
 
-        # self.master.protocol("WM_DELETE_WINDOW", self.on_close)
-
+        # controls for type of setting to load:
         mode = StringVar()
         mode.set('sessions')
         session = Radiobutton(
@@ -162,38 +197,50 @@ class LoadDialog(Frame):
             self, text="Colors", width=8, indicatoron=False, value='colors',
             variable=mode
         )
-        self._pick = None
-        #
+
+        # setting up the entry box for the name of setting:
         name = StringVar()
         namelabel = Label(self, text="Name:")
         namebox = Entry(self, textvariable=name)
 
+        # making the button to show available settings
         listbtn = Button(
             self,
             text="List Available",
-            command=lambda: self.list_dialog(name, mode)
+            command=lambda: self.open_list_dialog(name, mode)
         )
-        self._choosedlg = None
 
+        # making button to run the passed loading function
         loadbtn = Button(
             self, text="Load",
             command=lambda: func(mode.get(), name.get())
         )
 
+        # adding everything to the page:
         session.grid(row=10, column=9, columnspan=100)
         pattern.grid(row=10, column=120, columnspan=100, padx=20)
         colors.grid(row=10, column=230, columnspan=100)
-
         namelabel.grid(row=13, column=37, columnspan=100, pady=(20, 0))
         namebox.grid(row=15, column=10, columnspan=300, pady=(0, 20))
         listbtn.grid(row=20, column=9, columnspan=50, sticky='sw')
         loadbtn.grid(row=20, column=250, columnspan=50, sticky='se')
 
-    def list_dialog(self, name, mode):
+    @staticmethod
+    def open_list_dialog(name, mode):
         ListAvailableDialog(name, mode.get())
 
 
 class ListAvailableDialog(Frame):
+    """
+    This dialog is launched from the loading dialog. It lists the names that
+    are available to load. Clicking on one of the names fills the entry box
+    with that name.
+    Args:
+        namevar: the tk variable for the load dialog textbox. This is set based
+            on the list item clicked.
+        type: a string representing the type of object to load. must be
+            'sessions', 'colors', or 'patterns'.
+    """
     def __init__(self, namevar, type='sessions'):
         super().__init__(Toplevel())
         self.namevar = namevar
@@ -203,11 +250,10 @@ class ListAvailableDialog(Frame):
         files = os.listdir(
             f'./spirogen/interface/settings/{type}'
         )
-        # files = [f.strip('.json') for f in files]
-        # files = list(filter(lambda f: not all([i.isdigit() for i in f]), files))
         lbox = Listbox(self)
         for i, file in enumerate(files):
             name = file.replace('.json', '')
+            # so that we don't show the names that are just generated id's:
             if not all(map(lambda x: x.isdigit(), name)):
                 lbox.insert(i, name)
         lbox.pack(fill="both")
@@ -220,6 +266,15 @@ class ListAvailableDialog(Frame):
 
 
 class ColorSwatchDialog(Frame):
+    """
+    This dialog is for editing colors directly. It is launched by clicking on
+    a color swatch on the color scheme page.
+    Args:
+        targetswatch: the swatched that was clicked to open the dialog. This is
+            the swatch that will be updated.
+        curcolors: the current bank of colors in the session
+        defaultcolors: the bank of default, full spectrum, colors
+    """
     def __init__(self, targetswatch, curcolors, defaultcolors):
         super().__init__(Toplevel())
         self.master.title('Update Color')
@@ -346,6 +401,11 @@ class ColorSwatchDialog(Frame):
 
 
 class SelectableColorSwatch(Frame):
+    """
+    This is the class of swatches used in the color editing dialog. The point
+    is to be selectable. It's just a thin wrapper around Frame that binds
+    click events to the passed function.
+    """
     def __init__(self, master, color, func, **kwargs):
         self.color = color
         super().__init__(
