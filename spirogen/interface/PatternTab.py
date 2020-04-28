@@ -402,7 +402,9 @@ class PatternTab(Tab):
                             if isinstance(j, (Widget, Parameter)):
                                 j.grid_forget()
 
-    def save(self):
+    def save(self, mode, name):
+        if mode == 'patterns':
+            self.name = name
         params = {}
         # converting all widget parameters to their values for save:
         for k, v in self._parameters.items():

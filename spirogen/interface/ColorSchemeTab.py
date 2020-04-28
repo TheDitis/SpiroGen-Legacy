@@ -473,7 +473,9 @@ class ColorSchemeTab(Tab):
         self.colordict = scheme.colors
         self.update_color_boxes()
 
-    def save(self):
+    def save(self, mode, name):
+        if mode == 'colors':
+            self.name = name
         output = {'background': {'r': self._bg_red.get(),
                                  'g': self._bg_green.get(),
                                  'b': self._bg_blue.get()},
@@ -481,6 +483,7 @@ class ColorSchemeTab(Tab):
                   'nstops': self._colorstops.get(),
                   'colordict': self.colordict,
                   'id': self.name}
+
         return self.name, output
 
     def load(self, name, data):

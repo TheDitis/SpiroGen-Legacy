@@ -35,10 +35,6 @@ class TopMenu(Menu):
         self.add_cascade(label="Help", menu=helpmenu)
 
 
-def donothing():
-    print('called')
-
-
 class Application(ttk.Notebook):
     def __init__(self):
         super().__init__(Tk())  # initialize notebook (Frame that can use tabs)
@@ -50,6 +46,7 @@ class Application(ttk.Notebook):
 
         self._patterntab = PatternTab(self)  # create the pattern control tab
         self._colorschemetab = ColorSchemeTab(self)  # create the colors tab
+
         # add both tabs to the notebook:
         self.add(self._patterntab, text="Pattern")
         self.add(self._colorschemetab, text="Color Scheme")
@@ -149,8 +146,8 @@ class Application(ttk.Notebook):
 
     def save(self, mode, name):
         name = name.lower()  # making sure the name is lowercase so there can only be one pattern per name
-        colname, colors = self._colorschemetab.save()  # collect the color data dict
-        patname, pattern = self._patterntab.save()  # collect the pattern data dict
+        colname, colors = self._colorschemetab.save(mode, name)  # collect the color data dict
+        patname, pattern = self._patterntab.save(mode, name)  # collect the pattern data dict
         names = {'colors': colname, 'patterns': patname}
         print(names)
         self._settingnames[mode] = name
