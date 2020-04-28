@@ -152,6 +152,7 @@ class Application(ttk.Notebook):
         colname, colors = self._colorschemetab.save()  # collect the color data dict
         patname, pattern = self._patterntab.save()  # collect the pattern data dict
         names = {'colors': colname, 'patterns': patname}
+        print(names)
         self._settingnames[mode] = name
         current = {'colors': colors, 'patterns': pattern}  # get the current settings for each tab
         files = os.listdir(f'{self._settingspath}{mode}')  # get list of files in directory
@@ -165,18 +166,43 @@ class Application(ttk.Notebook):
                 ids = deepcopy(self._settingnames)
                 ids.pop('sessions')
                 for k in ids:
-                    if not ids[k]:
-                        ids[k] = f"from {name} session"
-                    else:
+                    if ids[k]:
                         self._settingnames[k] = names[k]
-                sessionpath = f"{self._settingspath}/sessions/{name}.json"  # make path to save session info
+                        ids[k] = names[k]
+                    else:
+                        ids[k] = f"from {name} session"
                 # TODO: Add checking for id already existing
-                with open(sessionpath, 'w') as file:  # save file pointer dict to file
-                    json.dump(ids, file, indent=2)
+                sessionpath = f"{self._settingspath}/sessions/{name}.json"  # make path to save session info
                 for key in ids:  # for each tab (colors and patterns):
                     path = f'{self._settingspath}/{key}/{ids[key]}.json'  # make path with the new id as the file name
+                    while os.path.exists(path):  # while a file with this given name exists
+                        with open(path, 'r') as file:  # open the
+                            existing = json.load(file)
+                        if existing != current[key]:  # if the current version is different from the saved version:
+                            if ids[key][-1].isdigit():  # if the last character is a digit:
+                                if ids[key][-2].isdigit():  # if the second character is also a digit:
+
+                                    num = int(ids[key][-2:]) + 1  # grab the number and increment it
+                                    ids[key] = ids[key][:-2] + str(num)  # and replace the old number with the new
+                                    print(ids[key])
+                                else:  # if there is only one digit:
+                                    print('one digit')
+                                    num = int(ids[key][-1]) + 1  # increment the number
+                                    ids[key] = ids[key][:-1] + str(num)  # and replace it
+                                    print(ids[key])
+                            else:  # if name does not have a number after it:
+                                print('no digits')
+                                ids[key] += ' ' + str(2)  # add a number to the end
+                                print(ids[key])
+                        else:
+                            break
+                        path = f'{self._settingspath}/{key}/{ids[key]}.json'
+                        print('2', path)
+                    path = f'{self._settingspath}/{key}/{ids[key]}.json'
                     with open(path, 'w') as file:  # open the file and write data
                         json.dump(current[key], file, indent=2)
+                with open(sessionpath, 'w') as file:  # save file pointer dict to file
+                    json.dump(ids, file, indent=2)
         else:  # if the name already exists:
             # TODO: ask if user wants to overwrite
             print('Name already exists. Try again')
@@ -210,7 +236,7 @@ class Application(ttk.Notebook):
                         except json.decoder.JSONDecodeError:
                             print('Error loading data from ', path)
                     self._settingnames[k] = ids[k]
-                    destinations[k].load(name, data)  # call load method for given tab
+                    destinations[k].load(ids[k], data)  # call load method for given tab
                 self._settingnames['sessions'] = name
         else:  # if name doesn't exist in folder:
             print('Name not found. Try another mode, or a different name.')

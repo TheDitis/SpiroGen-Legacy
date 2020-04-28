@@ -72,7 +72,7 @@ class ColorSchemeTab(Tab):
         )  # this one sets the number of transitionary colors beginning to end of the selected colors
         self._totalcolors.set(100)
         self._colorstops = Parameter(
-            self, label="Number of Stops", from_=1, to=11,
+            self, label="Number of Stops", from_=2, to=11,
             command=self.update_colorstops, row=10
         )  # this one sets the number of colors you define specifically
         self._colorstops.set(11)
@@ -132,7 +132,9 @@ class ColorSchemeTab(Tab):
     @property
     def colorscheme(self):
         # returns a spirogen ColorScheme object with the current parameters
+        print(self.currentcolors)
         scheme = ColorScheme(self.currentcolors, self._totalcolors.get())
+        print(len(scheme))
         return scheme
 
     @property
