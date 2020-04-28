@@ -10,7 +10,7 @@ Output:
     save method outputs a dictionary to be saved as json
 """
 from tkinter import StringVar, Label, Button, Entry, IntVar
-from copy import deepcopy
+from copy import deepcopy, copy
 from spirogen.interface.Tab import Tab
 from spirogen.interface.Parameter import Parameter
 from spirogen.spirogen import ColorScheme
@@ -26,7 +26,7 @@ from time import sleep
 class ColorSchemeTab(Tab):
     def __init__(self, master):
         super().__init__(master)
-        self._id = None  # currently unused, but will be for saving and loading
+        self.name = None  # currently unused, but will be for saving and loading
         # dictionary of default colors for initialization and the reset button:
         self._default = {
             'r': [255, 255, 255, 220, 75, 3, 3, 30, 125, 220, 255],
@@ -128,16 +128,6 @@ class ColorSchemeTab(Tab):
             row=30, column=3, columnspan=200, pady=10, padx=(5, 0)
         )
         ramplightnessbutton.grid(row=30, column=210, columnspan=200)
-
-
-    # @property
-    # def default_arr(self):
-    #     if self._colordict_arr:
-    #         if self._cached_colordict == self._colordict:
-    #             return self._colordict_arr
-    #     self._cached_colordict = deepcopy(self._colordict)
-    #     self._colordict_arr = np.array(self._colordict.values())
-    #     return self._colordict_arr
 
     @property
     def colorscheme(self):
@@ -330,22 +320,14 @@ class ColorSchemeTab(Tab):
         output = "#%02x%02x%02x" % rgb
         return output
 
-    def make_color_boxes(self):
-        """
-        This method creates the rgb input boxes and swatches based on the numer
-        of stops set by the user.
-        Returns:
-
-        """
-        n = self._colorstops.get()
+    def remove_old_color_boxes(self):
         prevparams = []
         if 'colorparams' in self._progparams.keys():
             for group in self._progparams['colorparams']:
                 entry = []
                 for key in group:
                     if key == 'vals':
-                        for widget in group[key].values():
-                            entry.append(widget.get())
+                        entry += (w.get() for w in group[key].values())
                     elif key == 'boxes':
                         for widget in group[key].values():
                             widget.grid_forget()
@@ -355,6 +337,15 @@ class ColorSchemeTab(Tab):
                 prevparams.append(entry)
 
         self._progparams['colorparams'] = []
+        return prevparams
+
+    def make_color_boxes(self):
+        """
+        This method creates the rgb input boxes and swatches based on the numer
+        of stops set by the user.
+        """
+        n = self._colorstops.get()
+        self.remove_old_color_boxes()
 
         r_row, g_row, b_row = 10, 14, 18
 
@@ -370,21 +361,10 @@ class ColorSchemeTab(Tab):
             col_label = Label(self._spacedarea, text=str(i + 1))
 
             red = StringVar()
-            red.trace(
-                'w', partial(self.update_color_dict, index=i, key='r')
-            )
             redbox = Entry(self._spacedarea, width=3, textvariable=red)
-
             green = StringVar()
-            green.trace(
-                'w', partial(self.update_color_dict, index=i, key='g')
-            )
             greenbox = Entry(self._spacedarea, width=3, textvariable=green)
-
             blue = StringVar()
-            blue.trace(
-                'w', partial(self.update_color_dict, index=i, key='b')
-            )
             bluebox = Entry(self._spacedarea, width=3, textvariable=blue)
 
             red.set(self.colordict['r'][i])
@@ -398,6 +378,19 @@ class ColorSchemeTab(Tab):
                 curcolors=self.colordict, defaultcolors=self._default,
                 func=self.open_editor
             )
+            red.trace(
+                'w',
+                partial(self.update_color_dict, index=i, key='r',
+                        swatch=examplebox, color=color)
+            )
+            green.trace(
+                'w', partial(self.update_color_dict, index=i, key='g',
+                             swatch=examplebox, color=color)
+            )
+            blue.trace(
+                'w', partial(self.update_color_dict, index=i, key='b',
+                             swatch=examplebox, color=color)
+            )
 
             col = 20 * (i + 1)  # just so that I have flexibility in positioning things later if I make changes
             col_label.grid(row=8, column=col, pady=10, padx=1)
@@ -408,7 +401,7 @@ class ColorSchemeTab(Tab):
             examplebox.grid(row=20, column=col, pady=10)
 
             self._progparams['colorparams'].append(
-                {'boxes': {'r': redbox, 'g': greenbox,'b': bluebox},
+                {'boxes': {'r': redbox, 'g': greenbox, 'b': bluebox},
                  'vals': {'r': red, 'g': green, 'b': blue},
                  'label': col_label,
                  'example': examplebox})
@@ -416,45 +409,31 @@ class ColorSchemeTab(Tab):
             # pass
             # self.progparams['curveboxes'].append([curvebox, label2])
 
-    def update_color_dict(self, *args, index, key):
-        # print(self.n_updates)
-        # self.n_updates += 1
-        colparams = self._progparams['colorparams']
+    def update_color_dict(self, *args, index, key, swatch, color):
+        # if False:
+        colparams = [l.copy() for l in self._progparams['colorparams']]
         values = [i['vals'] for i in colparams]
         examples = [i['example'] for i in colparams]
         # newcols = deepcopy(self.colordict)
         newcols = {k: self.colordict[k].copy() for k in self.colordict}
         if index < len(values):
             group = values[index]
-            rgb = []
-            for key in group:  # for 'r', 'g', and 'b':
-                ind = (index - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
-                strval = group[key].get()
-                if strval != '':
-                    val = round(float(strval))
-                    self.colordict[key][ind] = val
-                    newcols[key][index] = val
-                    rgb.append(val)
-            if len(rgb) == 3:
-                examples[index].updatecolor(self.rgb_tk(rgb))
-        # else:
-        #     for i in range(len(values)):  # for index of values (tk StringVar objects):
-        #         group = values[i]  # group =  {'r': rVar, 'g': gVar, 'b': bVar)
-        #         rgb = []
-        #         for key in group:  # for 'r', 'g', and 'b':
-        #             ind = (i - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
-        #             strval = group[key].get()
-        #             if strval != '':
-        #                 val = round(float(strval))
-        #                 self.colordict[key][ind] = val
-        #                 newcols[key][i] = val
-        #                 rgb.append(val)
-        #         if len(rgb) == 3:
-        #             examples[i].updatecolor(self.rgb_tk(rgb))
-        self.colordict = newcols
+            # rgb = []
+            ind = (index - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
+            strval = group[key].get()
+            if strval != '':
+                # print(index, key)
+                val = round(float(strval))
+                self._colordict[key][ind] = val  # was ind
+                newcols[key][index] = val
+                    # rgb.append(val)
+            # if len(rgb) == 3:
+            #     examples[index].updatecolor(self.rgb_tk(rgb))
+        self._colordict = newcols
+        self.update_swatches()
 
     def update_color_boxes(self):
-        self.make_color_boxes()
+        # self.make_color_boxes()
         for i in range(len(self._progparams['colorparams'])):
             group = self._progparams['colorparams'][i]
             rgb = []
@@ -462,7 +441,17 @@ class ColorSchemeTab(Tab):
                 val = self.colordict[key][i]
                 rgb.append(val)
                 group['vals'][key].set(val)
-        # self.make_color_boxes()
+            group['example'].updatecolor(self.rgb_tk(rgb))
+
+    def update_swatches(self):
+        for i in range(len(self._progparams['colorparams'])):
+            group = self._progparams['colorparams'][i]
+            rgb = []
+            for key in group['vals']:
+                val = self.colordict[key][i]
+                rgb.append(val)
+                # group['vals'][key].set(val)
+            group['example'].updatecolor(self.rgb_tk(rgb))
 
     def open_editor(self, targetswatch):
         ColorSwatchDialog(
@@ -489,10 +478,11 @@ class ColorSchemeTab(Tab):
                   'totalcolors': self._totalcolors.get(),
                   'nstops': self._colorstops.get(),
                   'colordict': self.colordict,
-                  'id': self._id}
-        return output
+                  'id': self.name}
+        return self.name, output
 
-    def load(self, data):
+    def load(self, name, data):
+        self.make_color_boxes()
         self._hueshiftvar.set(0)
         self._previoushue = 0
         self._previousshift = 0
@@ -503,4 +493,5 @@ class ColorSchemeTab(Tab):
         self._colorstops.set(int(data["nstops"]))
         self.colordict = data["colordict"]
         self.update_color_boxes()
+        self.name = name
 

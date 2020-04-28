@@ -12,6 +12,7 @@ class PatternTab(Tab):
         self._parameters = {}
 
         super().__init__(master)
+        self.name = None
         # Setting dropdown menu for selecting pattern type
         patterns = ['layeredflowers', 'radialangular', 'sinespiral', 'spirals',
                     'iterativerotation']
@@ -40,27 +41,39 @@ class PatternTab(Tab):
         elif patterntype == 'iterativerotation':
             self.set_iterative_rotation()
 
+    @property
+    def angleparam(self):
+        val1 = self._parameters['rotate'].get()
+        val2 = self._parameters['rotationfactor'].get()
+        return val1 * val2
+
     def _set_layered_flowers(self):
         # create, set, and grid each parameter:
         layers = Parameter(self, label="layers", from_=10, to=200, row=3)
         layers.set(100)
-        angle1 = Parameter(self, label="rotation angle", from_=-90.0, to=90.0,
-                           resolution=0.1, bigincrement=0.1, row=4)
+        angle1 = Parameter(self, label="rotation angle", from_=-18.0, to=18.0,
+                           resolution=0.1, bigincrement=0.1, row=5)
+        angle2 = Parameter(
+            self, label="Rotation Multiplier", from_=0, to=10, resolution=0.1,
+            row=10
+        )
+        angle2.set(1)
         npetals = Parameter(self, label="petals", from_=1.0, to=80,
-                            resolution=1, tickinterval=9, row=5)
+                            resolution=1, tickinterval=9, row=15)
         npetals.set(2)
         innerdepth = Parameter(self, label="Petal Depth", from_=0, to=6,
-                               resolution=0.1, bigincrement=0.1, row=6)
+                               resolution=0.1, bigincrement=0.1, row=20)
         innerdepth.set(1)
         size = Parameter(
-            self, label="size", from_=1, to=10, row=7, resolution=0.1
+            self, label="size", from_=1, to=10, row=25, resolution=0.1
         )
-        pensize = Parameter(self, label="pen size", from_=1, to=40, row=8)
+        pensize = Parameter(self, label="pen size", from_=1, to=40, row=30)
 
         # add all parameters to the patterntab's master list.
         self._parameters = {
             'layers': layers, "npetals": npetals, "innerdepth": innerdepth,
-            "rotate": angle1, "sizefactor": size, "pensize": pensize
+            "rotate": angle1, "rotationfactor": angle2, "sizefactor": size,
+            "pensize": pensize
         }
 
     def _set_radial_angular(self):
@@ -248,12 +261,17 @@ class PatternTab(Tab):
             self, label="Rotation", from_=-180, to=180, row=20, resolution=0.1,
             bigincrement=0.1
         )
-        curve = Parameter(self, label="Curve Amount", from_=1, to=50, row=22)
-        diameter = Parameter(self, label="Diameter", from_=1, to=30, row=25)
-        scale = Parameter(self, label="Scale", from_=5, to=50, row=27)
+        curve = Parameter(self, label="Scale", from_=1, to=50, row=22)
+        diameter = Parameter(self, label="Curve Length", from_=1, to=30, row=25)
+        scale = Parameter(
+            self, label="Spiral Tightness (Size)", from_=5, to=50, row=27
+        )
         poly = Parameter(self, label="Poly", from_=2, to=400, row=30)
         centerdist = Parameter(
             self, label="Distance from Center", from_=0, to=50, row=32
+        )
+        pensize = Parameter(
+            self, label="Pen Size", from_=1, to=60, row=36
         )
 
         reps.set(60)
@@ -267,7 +285,7 @@ class PatternTab(Tab):
         self._parameters = {
             'reps': reps, 'rotation': rotation, 'curve': curve,
             'diameter': diameter, 'scale': scale, 'poly': poly,
-            'centerdist': centerdist
+            'centerdist': centerdist, 'pensize': pensize
         }
 
     def set_iterative_rotation(self):
@@ -354,8 +372,10 @@ class PatternTab(Tab):
         }
 
     def clear(self):
-        #  This method is used to remove all Widgets from the frame when
-        #  switching pattern types
+        """
+        This method is used to remove all Widgets from the frame when
+        switching pattern types
+        """
         for p in self._parameters.values():
             if isinstance(p, Widget):
                 p.grid_forget()
@@ -385,9 +405,9 @@ class PatternTab(Tab):
             'patterntype': self._patternselection.get(),
             'parameters': params
         }
-        return output
+        return self.name, output
 
-    def load(self, data):
+    def load(self, name, data):
         """
         Sets parameters to the values in the data retrieved
         Args:
@@ -416,6 +436,7 @@ class PatternTab(Tab):
                     self._parameters[k].set(params[k])  # set that parameter to the retrieved value for that param
             else:  # if that parameter isn't already in the list:
                 self._parameters[k] = params[k]  # add it
+        self.name = name
 
     def run(self, colorscheme):
         """
@@ -438,6 +459,8 @@ class PatternTab(Tab):
 
         # This is where the patterns are actually drawn based on selection:
         if self._patternselection.get() == "layeredflowers":
+            parameters['rotate'] = self.angleparam
+            parameters.pop('rotationfactor')
             LVL2.layered_flowers(**parameters, colors=colorscheme)
         elif self._patternselection.get() == "radialangular":
             self.set_angles()

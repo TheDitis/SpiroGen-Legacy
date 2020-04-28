@@ -4,9 +4,9 @@
     "layers": 100,
     "npetals": 2,
     "innerdepth": 6.0,
-    "rotate": 4.5,
-    "rotationfactor": 10,
-    "sizefactor": 1,
-    "pensize": 19
+    "rotate": 9.0,
+    "rotationfactor": 10.0,
+    "sizefactor": 1.0,
+    "pensize": 1
   }
 }

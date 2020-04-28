@@ -1626,14 +1626,16 @@ class LVL2:
 
     @staticmethod
     def spiral_spiral(reps=30, rotation=5, curve=10, diameter=10, scale=20,
-                      poly=400, centerdist=0, colors=default_color_list):
+                      poly=400, centerdist=0, colors=default_color_list,
+                      pensize=1):
         rotate = 0
         for i in range(reps):
             colind = i % len(colors)
             col = colors[colind]
             spiral = SpiralPattern(linelength=curve, diameter=diameter,
                                    scale=scale, poly=poly,
-                                   centerdist=centerdist, color=col)
+                                   centerdist=centerdist, color=col,
+                                   pensize=pensize)
             Transform(spiral).rotate(rotate)
             spiral.draw()
             rotate += rotation

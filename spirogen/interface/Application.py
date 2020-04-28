@@ -15,7 +15,7 @@ from spirogen.interface.Dialogs import SaveDialog, LoadDialog
 from spirogen.interface.Help import HelpIndex, Tutorial
 import turtle
 import os
-import random
+from copy import deepcopy
 import json
 
 
@@ -53,6 +53,10 @@ class Application(ttk.Notebook):
         # add both tabs to the notebook:
         self.add(self._patterntab, text="Pattern")
         self.add(self._colorschemetab, text="Color Scheme")
+
+        self._settingnames = {
+            'sessions': None, 'colors': None, 'patterns': None
+        }
 
         self._settingspath = './spirogen/interface/settings/'
 
@@ -97,7 +101,7 @@ class Application(ttk.Notebook):
         )  # this is the spirogen function for initailizing the turtle drawing
 
     def open_save_dialog(self):
-        SaveDialog(self.save)  # instantiate SaveDialog object with save method
+        SaveDialog(self.save, self._settingnames)  # instantiate SaveDialog object with save method
 
     def open_load_dialog(self):
         LoadDialog(self.load)  # instantiate LoadDialog object with load method
@@ -145,8 +149,10 @@ class Application(ttk.Notebook):
 
     def save(self, mode, name):
         name = name.lower()  # making sure the name is lowercase so there can only be one pattern per name
-        colors = self._colorschemetab.save()  # collect the color data dict
-        pattern = self._patterntab.save()  # collect the pattern data dict
+        colname, colors = self._colorschemetab.save()  # collect the color data dict
+        patname, pattern = self._patterntab.save()  # collect the pattern data dict
+        names = {'colors': colname, 'patterns': patname}
+        self._settingnames[mode] = name
         current = {'colors': colors, 'patterns': pattern}  # get the current settings for each tab
         files = os.listdir(f'{self._settingspath}{mode}')  # get list of files in directory
         files = [f.replace('.json', '') for f in files]  # get the names without the file extensions
@@ -156,29 +162,13 @@ class Application(ttk.Notebook):
                 with open(path, 'w') as file:  # open the file and save the data
                     json.dump(current[mode], file, indent=2)
             else:  # if you are saving both colors and pattern together:
-                # generate ids for each:
-                # col_id = str(random.randint(100000, 199999))
-                # pat_id = str(random.randint(100000, 199999))
-                ids = {'colors': name, 'patterns': name}
-                col_id = name
-                pat_id = name
+                ids = deepcopy(self._settingnames)
+                ids.pop('sessions')
                 for k in ids:
-                    files = os.listdir(f'{self._settingspath}{k}')
-                    files = [f.replace('.json', '') for f in files]
-                    while ids[k] in files:
-                        if ids[k][-1].isdigit():
-                            nums = []
-                            for i, char in enumerate(ids[k][::-1]):
-                                if char.isdigit():
-                                    nums.append(ids[k].pop(-(i+1)))
-                                else:
-                                    break
-                            num = int(''.join(nums)) + 1
-                            ids[k].append(str(num))
-                        else:
-                            ids[k].append('1')
-                # make an object with id pointers for each tab
-                # ids = {'colors': col_id, 'patterns': pat_id}
+                    if not ids[k]:
+                        ids[k] = f"from {name} session"
+                    else:
+                        self._settingnames[k] = names[k]
                 sessionpath = f"{self._settingspath}/sessions/{name}.json"  # make path to save session info
                 # TODO: Add checking for id already existing
                 with open(sessionpath, 'w') as file:  # save file pointer dict to file
@@ -202,8 +192,13 @@ class Application(ttk.Notebook):
             path = f"{self._settingspath}/{mode}/{name}.json"  # make the path string
             if mode != 'sessions':  # if you are loading one tab individually:
                 with open(path, 'r') as file:  # open file and grab data
-                    data = json.load(file)
-                destinations[mode].load(data)  # call the given tabs load method
+                    try:
+                        data = json.load(file)
+                        destinations[mode].load(name, data)  # call the given tabs load method
+                        self._settingnames[mode] = name
+                        destinations[mode].name = name
+                    except json.decoder.JSONDecodeError:
+                        print('Error loading data from ', path)
             else:  # if you are loading a whole session:
                 with open(path, 'r') as file:  # open the file and grab the data
                     ids = json.load(file)
@@ -214,7 +209,9 @@ class Application(ttk.Notebook):
                             data = json.load(file)
                         except json.decoder.JSONDecodeError:
                             print('Error loading data from ', path)
-                    destinations[k].load(data)  # call load method for given tab
+                    self._settingnames[k] = ids[k]
+                    destinations[k].load(name, data)  # call load method for given tab
+                self._settingnames['sessions'] = name
         else:  # if name doesn't exist in folder:
             print('Name not found. Try another mode, or a different name.')
 

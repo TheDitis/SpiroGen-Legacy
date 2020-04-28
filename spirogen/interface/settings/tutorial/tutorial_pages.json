@@ -26,7 +26,7 @@
   },
   {
     "title": "Loading & Saving",
-    "text": "You can load or save patterns here. You can also find 'Open' and 'Save' options in the file menu",
+    "text": "You can load or save patterns here. You can also find 'Open' and 'Save' options in the file menu.\n\n- Unfortunatly there is no way to save images directly, only the parameters that create the pattern are saved, so if you want to save the image, you'll have to take a screenshot.",
     "image": "PatternTabTut5.png"
   },
   {

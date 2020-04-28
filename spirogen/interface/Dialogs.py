@@ -127,10 +127,13 @@ class SaveDialog(Frame):
          func: the function passed by Application to run when the load button
             is pressed.
     """
-    def __init__(self, func):
+    def __init__(self, func, currentnames):
         super().__init__(Toplevel())
         self.master.title("Save")
         self.pack(padx=30, pady=30)
+
+        self._current_names = currentnames
+        print(self._current_names)
 
         # making controls to set the mode
         mode = StringVar()
@@ -153,9 +156,13 @@ class SaveDialog(Frame):
         namelabel = Label(self, text="Name:")
         namebox = Entry(self, textvariable=name)
 
+        self.fill_current_name(name, mode.get())
+        mode.trace('w', lambda *x: self.fill_current_name(name, mode.get()))
+
         # making the button that runs the save function
         savebtn = Button(
-            self, text="Save", command=lambda: func(mode.get(), name.get())
+            self, text="Save",
+            command=lambda: func(mode.get(), name.get())
         )
 
         # adding everything to the page
@@ -165,6 +172,10 @@ class SaveDialog(Frame):
         namelabel.grid(row=13, column=37, columnspan=100, pady=(20, 0))
         namebox.grid(row=15, column=10, columnspan=300, pady=(0, 20))
         savebtn.grid(row=20, column=250, columnspan=50, sticky='se')
+
+    def fill_current_name(self, namevar, mode):
+        if self._current_names[mode]:
+            namevar.set(self._current_names[mode])
 
 
 class LoadDialog(Frame):
@@ -251,11 +262,18 @@ class ListAvailableDialog(Frame):
             f'./spirogen/interface/settings/{type}'
         )
         lbox = Listbox(self)
+
+        endfiles = []
         for i, file in enumerate(files):
             name = file.replace('.json', '')
             # so that we don't show the names that are just generated id's:
-            if not all(map(lambda x: x.isdigit(), name)):
-                lbox.insert(i, name)
+            if 'from' in name and 'session' in name:
+                endfiles.append(name)
+            else:
+                if not all(map(lambda x: x.isdigit(), name)):
+                    lbox.insert(i, name)
+        for i, file in enumerate(endfiles):
+            lbox.insert(i + len(files), file)
         lbox.pack(fill="both")
         lbox.bind('<<ListboxSelect>>', self.get_value)
 

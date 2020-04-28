@@ -5,6 +5,7 @@
     "npetals": 7,
     "innerdepth": 1.3,
     "rotate": 0.0,
+    "rotationfactor": 1.0,
     "sizefactor": 1.0,
     "pensize": 22
   }
