@@ -1,4 +1,14 @@
+"""
+File: PatternTab.py
+Author: Ryan McKay
+Date: April 13, 2020
 
+Purpose: This a tkinter based tab for the spirogen interface that controls the
+    shapes of the pattern
+Input: master Notebook
+Output:
+    save method outputs a dictionary to be saved as json
+"""
 from tkinter import StringVar, BooleanVar, IntVar, OptionMenu, Label, Entry, \
     Scale, Radiobutton, Widget
 from spirogen.interface.Tab import Tab

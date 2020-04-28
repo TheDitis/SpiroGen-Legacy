@@ -1,3 +1,23 @@
+"""
+File: Help.py
+Author: Ryan McKay
+Date: April 26, 2020
+
+Purpose:
+    This file holds the Tutorial and HelpIndex classes
+    HelpIndex:
+        This window lists subjects on which you can get help, and basically just
+        opens the tutorial to the corresponding page
+    Tutorial:
+        A frame that hows images and gives instructions on using the program
+    GifPlayer:
+        This is a sublass of label (for some reason, that's one of the best ways
+        in tkinter to display an image) that iterates through frames of the gif.
+Input:
+    None
+Output:
+    save method outputs a dictionary to be saved as json
+"""
 from tkinter import Frame, Listbox, Toplevel, Label, Button, Message, Scrollbar
 from tkinter.font import Font
 from PIL import Image, ImageTk

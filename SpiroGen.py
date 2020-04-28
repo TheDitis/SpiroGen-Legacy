@@ -1,4 +1,3 @@
-# from interface.SpiroGenPlayground import SpiroGenPlayground
 from spirogen.interface import Application
 
 
