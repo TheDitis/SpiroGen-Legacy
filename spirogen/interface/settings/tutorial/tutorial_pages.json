@@ -76,8 +76,13 @@
   },
   {
     "title": "Color Shifting",
-    "text": "This control shifts your current selection through all 11 of the colors in the colorbank.",
+    "text": "This control shifts your current selection through all 11 of the colors in the colorbank.\n\nYou have 11 total colors in your color bank, but only the selection available will be used in the pattern.\n\nWhen you use the Ramp Lightness effect, it affects the entire color bank, so make use this control so that the edge that you want to be maximally affected is on one of the edges, and that you select that side in the effect menu.",
     "image": "ColorShift.gif"
+  },
+  {
+    "title": "Hue Shifting (New Feature!)",
+    "text": "You can shift the hue of all colors in your colorbank, rather than just their position in the bank, with the hue shift control.\n\nThe position of this control is not saved with the color scheme, so when you load a saved color set that has been hue shifted, the colors will still be the same as they were when you saved, but the shift hue control will be centered at 0.",
+    "image": "HueShiftTut.gif"
   },
   {
     "title": "Updating Values",
