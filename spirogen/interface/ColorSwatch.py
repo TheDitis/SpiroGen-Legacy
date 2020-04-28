@@ -46,7 +46,7 @@ class ColorSwatch(Frame):
         for key in defaults:
             if key not in kwargs:
                 kwargs[key] = defaults[key]
-        super().__init__(master, **kwargs, bg=self.color)
+        super().__init__(master, **kwargs, bg=self.color, cursor="circle")
         self.bind("<Button-1>", self.open_editor)
 
     def open_editor(self, *args):
