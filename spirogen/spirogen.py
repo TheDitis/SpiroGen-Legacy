@@ -450,6 +450,7 @@ class ColorScheme:
         rlen = len(self.rlist) - 1
         glen = len(self.glist) - 1
         blen = len(self.blist) - 1
+
         rdivs = [self.ncolors // rlen] * rlen
         gdivs = [self.ncolors // glen] * glen
         bdivs = [self.ncolors // blen] * blen
