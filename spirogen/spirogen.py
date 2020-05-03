@@ -210,7 +210,7 @@ class Transform:
         elif self.ldepth == 2:
             for lst in self.inputxy:
                 for coord in lst:
-                    print(f"coord: {coord}")
+                    # print(f"coord: {coord}")
                     center_x, center_y = coord[0], coord[1]
                     for i in range(density):
                         radius = (np.random.exponential(exp) * spread)
