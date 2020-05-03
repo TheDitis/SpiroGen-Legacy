@@ -132,9 +132,7 @@ class ColorSchemeTab(Tab):
     @property
     def colorscheme(self):
         # returns a spirogen ColorScheme object with the current parameters
-        print(self.currentcolors)
         scheme = ColorScheme(self.currentcolors, self._totalcolors.get())
-        print(len(scheme))
         return scheme
 
     @property
@@ -161,8 +159,6 @@ class ColorSchemeTab(Tab):
         for i in range(len(self.colordict['r'])):
             rgb = [self.colordict[k][i] / 255 for k in self.colordict.keys()]
             hsv = [*rgb_to_hsv(rgb)]
-
-            # print('hsv:', hsv)
             for j, k in enumerate(hsv_dict):
                 hsv_dict[k].append(hsv[j])
         return hsv_dict
@@ -176,7 +172,6 @@ class ColorSchemeTab(Tab):
         for i in range(len(hsv_dict['h'])):
             hsv = [hsv_dict[k][i] for k in hsv_dict]
             rgb = [int(round(col * 255)) for col in hsv_to_rgb(hsv)]
-            # print('rgb', rgb)
             for j, k in enumerate(colordict):
                 colordict[k].append(rgb[j])
         return colordict
@@ -424,13 +419,9 @@ class ColorSchemeTab(Tab):
             ind = (index - 1) % len(self.colordict[key])  # set the index to edit, based on remainder of the index - shift amount
             strval = group[key].get()
             if strval != '':
-                # print(index, key)
                 val = round(float(strval))
-                self._colordict[key][ind] = val  # was ind
+                self._colordict[key][ind] = val
                 newcols[key][index] = val
-                    # rgb.append(val)
-            # if len(rgb) == 3:
-            #     examples[index].updatecolor(self.rgb_tk(rgb))
         self._colordict = newcols
         self.update_swatches()
 

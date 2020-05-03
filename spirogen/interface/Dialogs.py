@@ -133,7 +133,6 @@ class SaveDialog(Frame):
         self.pack(padx=30, pady=30)
 
         self._current_names = currentnames
-        print(self._current_names)
 
         # making controls to set the mode
         mode = StringVar()

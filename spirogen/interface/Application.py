@@ -149,7 +149,6 @@ class Application(ttk.Notebook):
         colname, colors = self._colorschemetab.save(mode, name)  # collect the color data dict
         patname, pattern = self._patterntab.save(mode, name)  # collect the pattern data dict
         names = {'colors': colname, 'patterns': patname}
-        print(names)
         self._settingnames[mode] = name
         current = {'colors': colors, 'patterns': pattern}  # get the current settings for each tab
         files = os.listdir(f'{self._settingspath}{mode}')  # get list of files in directory
@@ -181,20 +180,14 @@ class Application(ttk.Notebook):
 
                                     num = int(ids[key][-2:]) + 1  # grab the number and increment it
                                     ids[key] = ids[key][:-2] + str(num)  # and replace the old number with the new
-                                    print(ids[key])
                                 else:  # if there is only one digit:
-                                    print('one digit')
                                     num = int(ids[key][-1]) + 1  # increment the number
                                     ids[key] = ids[key][:-1] + str(num)  # and replace it
-                                    print(ids[key])
                             else:  # if name does not have a number after it:
-                                print('no digits')
                                 ids[key] += ' ' + str(2)  # add a number to the end
-                                print(ids[key])
                         else:
                             break
                         path = f'{self._settingspath}/{key}/{ids[key]}.json'
-                        print('2', path)
                     path = f'{self._settingspath}/{key}/{ids[key]}.json'
                     with open(path, 'w') as file:  # open the file and write data
                         json.dump(current[key], file, indent=2)
