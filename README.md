@@ -153,7 +153,7 @@ possible hue-shift positions
 ![Number of Stops Demo](./spirogen/interface/settings/tutorial/images/HueShiftTut_Cropped.gif)
 
 
-[comment]: <> (</div>)
+<br/><br/>
 
 
 <h3 style="color: #55D45E">3. Color Effects</h3>
