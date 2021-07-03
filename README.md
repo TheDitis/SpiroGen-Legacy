@@ -57,8 +57,8 @@ pattern will be drawn.
 
 <br/>
 
-##The Color Scheme Tab:
-###Color scheme basics:
+## The Color Scheme Tab:
+### Color scheme basics:
 The color scheme parameters define a set of colors that will be cycled through 
 while drawing. The different pattern types cycle through the colors a bit 
 differently, but in general, every 'next' turn, shape, or line drawn will be a 
