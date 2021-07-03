@@ -11,7 +11,7 @@ pip install -r requirements.txt
 #### 3. Run SpiroGen.py
 ### 4. Have fun!!
 
-####I recommend starting off by loading a few of the examples that come preinstalled and playing with them a bit before trying to build from scratch
+#### I recommend starting off by loading a few of the examples that come preinstalled and playing with them a bit before trying to build from scratch
 #### The tutorial will open on first launch, but if you need to find it again, you can find it in the help section of the menu.
 
 
@@ -56,7 +56,6 @@ Press this button to see the pattern! This will open a new window where the
 pattern will be drawn.
 
 <br/>
-
 
 ##The Color Scheme Tab:
 ###Color scheme basics:
