@@ -71,7 +71,7 @@ open the gui color editor.
 <h3 style="color: #D69D00">2. Main Color Controls</h3>
 These are the primary controls for the color of the pattern being drawn.
 
-<div style="padding-left: 8%">
+[comment]: <> (<div style="padding-left: 8%">)
 <h4 style="color: #FF8A00; display: inline; margin-right: 10px;"> 
     2a. Total Colors: 
 </h4>
@@ -149,7 +149,7 @@ possible hue-shift positions
 ![Number of Stops Demo](./spirogen/interface/settings/tutorial/images/HueShiftTut_Cropped.gif)
 
 
-</div>
+[comment]: <> (</div>)
 
 
 <h3 style="color: #55D45E">3. Color Effects</h3>
@@ -158,8 +158,8 @@ selected set of color swatches.
 
 ####Warning: Color effects are not reversible. Save your color scheme before applying if you are at all attached to it!
 
-<div style="padding-left: 8%;">
-    <h4 style="color: #55D45E; display: inline; margin-right: 10px; margin-top: 10px;"> 
+[comment]: <> (<div style="padding-left: 8%;">)
+<h4 style="color: #55D45E; display: inline; margin-right: 10px; margin-top: 10px;"> 
         Shift Lightness: 
     </h4>
     This effect shifts the values of your entire color set (not just the ones 
@@ -193,7 +193,8 @@ will make the first color black, and leave the rest exactly as it was
 
 <b>Important note: </b> Again, this effect does apply only to the current 
 selection of colors, not the entire 11-color set
-</div>
+
+[comment]: <> (</div>)
 
 
 ###More Info Coming Soon!
