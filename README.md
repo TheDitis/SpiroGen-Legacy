@@ -55,7 +55,7 @@ they produce. To save the image, you'll have to take a screenshot.
 Press this button to see the pattern! This will open a new window where the 
 pattern will be drawn.
 
-<br/>
+<br/><br/>
 
 ## The Color Scheme Tab:
 ### Color scheme basics:
@@ -160,7 +160,7 @@ possible hue-shift positions
 This section contains a few effects that can be applied to the currently 
 selected set of color swatches.
 
-####Warning: Color effects are not reversible. Save your color scheme before applying if you are at all attached to it!
+#### Warning: Color effects are not reversible. Save your color scheme before applying if you are at all attached to it!
 
 
 <h4 style="color: #55D45E; display: inline; margin-right: 10px; margin-top: 10px;"> 
@@ -201,4 +201,4 @@ selection of colors, not the entire 11-color set
 
 <br/>
 
-###More Info Coming Soon!
+### More Info Coming Soon!
