@@ -19,6 +19,8 @@ pip install -r requirements.txt
 [comment]: <> (##Basic Functionality:)
 
 
+<br/>
+
 ## The Pattern Tab:
 
 ![Pattern Page](./spirogen/interface/settings/tutorial/images/PatternTab_Sections.png)
@@ -52,6 +54,9 @@ they produce. To save the image, you'll have to take a screenshot.
 <h3 style="color: #A323FF">5. Run Button</h3>
 Press this button to see the pattern! This will open a new window where the 
 pattern will be drawn.
+
+<br/>
+
 
 ##The Color Scheme Tab:
 ###Color scheme basics:
@@ -158,7 +163,7 @@ selected set of color swatches.
 
 ####Warning: Color effects are not reversible. Save your color scheme before applying if you are at all attached to it!
 
-[comment]: <> (<div style="padding-left: 8%;">)
+
 <h4 style="color: #55D45E; display: inline; margin-right: 10px; margin-top: 10px;"> 
         Shift Lightness: 
     </h4>
@@ -194,7 +199,7 @@ will make the first color black, and leave the rest exactly as it was
 <b>Important note: </b> Again, this effect does apply only to the current 
 selection of colors, not the entire 11-color set
 
-[comment]: <> (</div>)
 
+<br/>
 
 ###More Info Coming Soon!
