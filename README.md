@@ -146,7 +146,7 @@ original colors will be loaded, but the position of this parameter will not
 change, so although the hue is no longer zero-centered, you can still reach all 
 possible hue-shift positions
 
-![Number of Stops Demo](./spirogen/interface/settings/tutorial/images/HueShiftTut_cropped.gif)
+![Number of Stops Demo](./spirogen/interface/settings/tutorial/images/HueShiftTut_Cropped.gif)
 
 
 </div>
