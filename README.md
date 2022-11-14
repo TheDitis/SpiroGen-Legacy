@@ -42,7 +42,7 @@ not always clear from their label, and can be different given different
 combinations, but the best way to familiarize yourself is to tweak them 
 individually and see how the image changes. 
 
-<h3 style="color: #00CCFF">4. Open Loading or Saving Dialogue</h3>
+<h3 style="color: #00CCFF">4. Open Load/Save Dialogue</h3>
 These two buttons open the saving and loading menus respectively. You can save 
 and load the entire configuration, or you can save and load the pattern and 
 color schemes individually. This allows you to try a given pattern with a few 
