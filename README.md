@@ -201,4 +201,5 @@ selection of colors, not the entire 11-color set
 
 <br/>
 
-### More Info Coming Soon!
+### Note:
+I'm working on a web version that outputs svg, check back for more info later
