@@ -1,6 +1,9 @@
 # SpiroGen
 ## A Playground for Making Geometric Patterns
 ![alt text](./spirogen/interface/settings/tutorial/images/TutorialWelcome.gif "Logo Title Text 1")
+
+<h1>V2 IS LIVE!!!</h1>
+This project is outdated, and I have been working on its successor, a web-app that allows you to add modulation and to use audio as a modulation source. Here's the  [readme page](https://github.com/TheDitis/Spirogen), and here's the [live app](https://www.spirogen.art/). If you are by chance here to check out the legacy app, by all means, you may continue.
 <br><br/>
 ## To get started:
 #### 1. Download or clone this project
